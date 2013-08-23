@@ -4,12 +4,13 @@
  */
 
 // Adding _ prefix b/c arduino api uses some of these names otherwise
-#define     _A0       (22)
-#define     _A1       (23)
+#define     _A0       (22)  // PB3
+#define     _A1       (23)  // PB4
 #define     _BYTE     (24)
 #define     _RC       (25)
 #define     _BUSY     (26)
 
+// these pins map to PORTC
 #define     _D0       (37)
 #define     _D1       (36)
 #define     _D2       (35)
@@ -40,10 +41,7 @@ void setup() {
 
   wait_busy();
 
-  // set the next channel to be read to 0
-  read_analog(0);
-
-  Serial.begin(19200);
+  Serial.begin(115200);
   Serial.println("Ready");
 }
 
@@ -59,14 +57,16 @@ void wait_busy() {
 /**
   Reads in the current conversion value, and sets the next channel to be
   sampled.
+
+  Returned value is 2s complemented 16 bit integer.
   */
 int16_t read_analog(uint8_t next_chan) {
-  // select the channel for the next read
-  digitalWrite(_A0, next_chan&0x01);
-  digitalWrite(_A1, next_chan>>1);
+  // we really don't need any interrupts messing the timings in here up
+  noInterrupts();
 
-  // pre-select the high byte for reading
-  digitalWrite(_BYTE, LOW);
+  // select the channel for the next read
+  digitalWrite(_A0, next_chan&0x1?HIGH:LOW);
+  digitalWrite(_A1, next_chan&0x2?HIGH:LOW);
 
   // begin a conversion
   digitalWrite(_RC, LOW);
@@ -76,37 +76,79 @@ int16_t read_analog(uint8_t next_chan) {
   // wait for busy to go high
   wait_busy();
 
+  // pre-select the high byte for reading
+  digitalWrite(_BYTE, LOW);
+  delayMicroseconds(1);
+
   // use port manipulation to read the data pins. Note that our pinmapping
   // is such that port C maps exactly onto the parallel output from the
   // ADS7825.
   uint8_t hbyte = PINC;
 
-  // now for the high byte
+  // now for the low byte
   digitalWrite(_BYTE, HIGH);
   delayMicroseconds(1);
 
   uint8_t lbyte = PINC;
 
-  return (hbyte<<8 | lbyte)&0xFFFF;
+  interrupts();
+
+  return (hbyte<<8 | lbyte);
 }
 
-void ser_print_si(char * s, int i) {
-  Serial.print(s);
-  Serial.print(i, DEC);
-}
-
-void ser_print_sx(char * s, int i) {
-  Serial.print(s);
-  Serial.print(i, HEX);
-}
-
+uint8_t trigcnt = 0;
+uint8_t trigstate = LOW;
 int16_t cnt = 0;
+
 void loop() {
-  Serial.print(cnt, DEC);
-  ser_print_si(" ", read_analog(1));
-  ser_print_si(" ", read_analog(2));
-  ser_print_si(" ", read_analog(3));
-  ser_print_si(" ", read_analog(0));
+  loop0();
+}
+
+int16_t buf[4];
+
+void loop1() {
+  buf[0] = read_analog(1);
+  buf[1] = read_analog(2);
+  buf[2] = read_analog(3);
+  buf[3] = read_analog(0);
+  delay(10);
+  Serial.print(cnt);
+  Serial.print(" ");
+  Serial.print(buf[0]);
+  Serial.print(" ");
+  Serial.print(buf[1]);
+  Serial.print(" ");
+  Serial.print(buf[2]);
+  Serial.print(" ");
+  Serial.print(buf[3]);
   Serial.println();
   cnt += 1;
+ 
+}
+
+void loop0() {
+  if (trigstate != digitalRead(_TRIGGER)) {
+    trigcnt += 1;
+    trigstate = !trigstate;
+  }
+
+  if (trigcnt >= 10) {
+    trigcnt = 0;
+    buf[0] = read_analog(1);
+    buf[1] = read_analog(2);
+    buf[2] = read_analog(3);
+    buf[3] = read_analog(0);
+
+    Serial.print(cnt);
+    Serial.print(" ");
+    Serial.print(buf[0]);
+    Serial.print(" ");
+    Serial.print(buf[1]);
+    Serial.print(" ");
+    Serial.print(buf[2]);
+    Serial.print(" ");
+    Serial.print(buf[3]);
+    Serial.println();
+    cnt += 1;
+  }
 }
