@@ -20,13 +20,18 @@
 #define     _D6       (31)
 #define     _D7       (30)
 
-#define     _LED       (13)
+#define     _LED      (13)
 
-#define     _TRIGGER   (40)
+#define     _TRIG_PIN (18)
+#define     _TRIG_INT (5)
+
+// *4 b/c we are sampling 4 channels. We assume each element of buf is enough
+// to hold a 16bit value
+#define     _BUF_SIZE (512*4)
 
 void setup() {
   uint8_t outputs[] = {_A0, _A1, _BYTE, _RC, _LED};
-  uint8_t inputs[] = {_BUSY, _D0, _D1, _D2, _D3, _D4, _D5, _D6, _D7, _TRIGGER};
+  uint8_t inputs[] = {_BUSY, _D0, _D1, _D2, _D3, _D4, _D5, _D6, _D7};
 
   for (int idx = 0; idx < sizeof outputs; ++idx) {
     pinMode(outputs[idx], OUTPUT);
@@ -41,8 +46,12 @@ void setup() {
 
   wait_busy();
 
+  // attach an interrupt to our trigger
+  attachInterrupt(_TRIG_INT, trig_ISR, FALLING);
+
   Serial.begin(115200);
   Serial.println("Ready");
+  Serial.println(millis());
 }
 
 /**
@@ -61,17 +70,20 @@ void wait_busy() {
   Returned value is 2s complemented 16 bit integer.
   */
 int16_t read_analog(uint8_t next_chan) {
-  // we really don't need any interrupts messing the timings in here up
-  noInterrupts();
 
   // select the channel for the next read
   digitalWrite(_A0, next_chan&0x1?HIGH:LOW);
   digitalWrite(_A1, next_chan&0x2?HIGH:LOW);
 
+  // we really don't need any interrupts messing the timings in here up
+  noInterrupts();
+  
   // begin a conversion
   digitalWrite(_RC, LOW);
   delayMicroseconds(1);
   digitalWrite(_RC, HIGH);
+
+  interrupts();
 
   // wait for busy to go high
   wait_busy();
@@ -91,20 +103,56 @@ int16_t read_analog(uint8_t next_chan) {
 
   uint8_t lbyte = PINC;
 
-  interrupts();
 
   return (hbyte<<8 | lbyte);
 }
 
-uint8_t trigcnt = 0;
-uint8_t trigstate = LOW;
-int16_t cnt = 0;
-
-void loop() {
-  loop0();
+volatile uint8_t trigcnt = 0;
+void trig_ISR() {
+  trigcnt += 1;
 }
 
-int16_t buf[4];
+
+void loop() {
+  loop2();
+}
+
+int16_t cnt = 0;
+int16_t buf[_BUF_SIZE];
+uint16_t writepos = 0;
+
+void loop2() {
+  // XXX this should be 10, but is 5 for debugging purposes
+  if (trigcnt>=10) {
+    trigcnt = 0;
+    if (writepos < _BUF_SIZE) {
+      buf[writepos+0] = read_analog(1);
+      buf[writepos+1] = read_analog(2);
+      buf[writepos+2] = read_analog(3);
+      buf[writepos+3] = read_analog(0);
+
+      writepos += 4;
+    } else {
+      if (writepos != 0xFFFF) {
+        Serial.println(millis());
+        writepos = 0xFFFF;
+
+        for (int idx = 0; idx < _BUF_SIZE; idx+=4) {
+          Serial.print(idx/4);
+          Serial.print(" ");
+          Serial.print(buf[idx+0]);
+          Serial.print(" ");
+          Serial.print(buf[idx+1]);
+          Serial.print(" ");
+          Serial.print(buf[idx+2]);
+          Serial.print(" ");
+          Serial.print(buf[idx+3]);
+          Serial.println();
+        }
+      }
+    }
+  }
+}
 
 void loop1() {
   buf[0] = read_analog(1);
@@ -126,8 +174,10 @@ void loop1() {
  
 }
 
+uint8_t trigstate = LOW;
 void loop0() {
-  if (trigstate != digitalRead(_TRIGGER)) {
+  // XXX trigger on a rising edge
+  if (trigstate != digitalRead(_TRIG_PIN) && trigstate == HIGH) {
     trigcnt += 1;
     trigstate = !trigstate;
   }
