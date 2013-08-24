@@ -1,6 +1,13 @@
 /**
  * This firmware is intended to interface with a ADS7825 from TI/BB, and
  * provide digital codes to the control software over USB-Serial.
+ * 
+ * The software responds to the following serial commands:
+ *
+ * - r:  read all 4 channels, return results immediately via serial
+ * - sN: performs N scans of all 4 channels. Results are stored until p is
+ *       issued.
+ * - p: prints the buffer, used to retrive values from sN
  */
 
 // Adding _ prefix b/c arduino api uses some of these names otherwise
@@ -24,6 +31,10 @@
 
 #define     _TRIG_PIN (18)
 #define     _TRIG_INT (5)
+
+// the trigger frequency is divided by _DIVIDER. e.g. if the trigger frequency
+// is 100Hz, and _DIVIDER is 10, then sampling occurs at 10Hz
+#define     _DIVIDER  (10)
 
 // *4 b/c we are sampling 4 channels. We assume each element of buf is enough
 // to hold a 16bit value
@@ -51,13 +62,12 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Ready");
-  Serial.println(millis());
 }
 
 /**
   Waits for BUSY to go high
   */
-void wait_busy() {
+inline void wait_busy() {
   while(digitalRead(_BUSY) == LOW) {
     digitalWrite(_LED, ~digitalRead(_BUSY));
   }
@@ -88,9 +98,8 @@ int16_t read_analog(uint8_t next_chan) {
   // wait for busy to go high
   wait_busy();
 
-  // pre-select the high byte for reading
+  // elect the high byte for reading
   digitalWrite(_BYTE, LOW);
-  delayMicroseconds(1);
 
   // use port manipulation to read the data pins. Note that our pinmapping
   // is such that port C maps exactly onto the parallel output from the
@@ -112,93 +121,59 @@ void trig_ISR() {
   trigcnt += 1;
 }
 
-
-void loop() {
-  loop2();
-}
-
-int16_t cnt = 0;
+// buffer for 16bit values from the ADC
 int16_t buf[_BUF_SIZE];
 uint16_t writepos = 0;
 
-void loop2() {
-  // XXX this should be 10, but is 5 for debugging purposes
-  if (trigcnt>=10) {
-    trigcnt = 0;
-    if (writepos < _BUF_SIZE) {
-      buf[writepos+0] = read_analog(1);
-      buf[writepos+1] = read_analog(2);
-      buf[writepos+2] = read_analog(3);
-      buf[writepos+3] = read_analog(0);
-
-      writepos += 4;
-    } else {
-      if (writepos != 0xFFFF) {
-        Serial.println(millis());
-        writepos = 0xFFFF;
-
-        for (int idx = 0; idx < _BUF_SIZE; idx+=4) {
-          Serial.print(idx/4);
-          Serial.print(" ");
-          Serial.print(buf[idx+0]);
-          Serial.print(" ");
-          Serial.print(buf[idx+1]);
-          Serial.print(" ");
-          Serial.print(buf[idx+2]);
-          Serial.print(" ");
-          Serial.print(buf[idx+3]);
-          Serial.println();
-        }
-      }
+void loop() {
+  int c = Serial.read();
+  if (c == 'r') {
+    // prime the ADS7825 to scan channel 0
+    read_analog(0);
+    Serial.print(read_analog(1));Serial.print(" ");
+    Serial.print(read_analog(2));Serial.print(" ");
+    Serial.print(read_analog(3));Serial.print(" ");
+    Serial.print(read_analog(0));Serial.println();
+  } else if (c == 's') {
+    int nscans = Serial.parseInt();
+    scan_channels(nscans);
+  } else if (c == 'p') {
+    for (int idx = 0; idx < writepos; idx += 4) {
+      Serial.print(idx/4);Serial.print(" ");
+      Serial.print(buf[idx+0]);Serial.print(" ");
+      Serial.print(buf[idx+1]);Serial.print(" ");
+      Serial.print(buf[idx+2]);Serial.print(" ");
+      Serial.print(buf[idx+3]);Serial.println();
     }
-  }
+  } else if (c != -1) Serial.println("???");
 }
 
-void loop1() {
-  buf[0] = read_analog(1);
-  buf[1] = read_analog(2);
-  buf[2] = read_analog(3);
-  buf[3] = read_analog(0);
-  delay(10);
-  Serial.print(cnt);
-  Serial.print(" ");
-  Serial.print(buf[0]);
-  Serial.print(" ");
-  Serial.print(buf[1]);
-  Serial.print(" ");
-  Serial.print(buf[2]);
-  Serial.print(" ");
-  Serial.print(buf[3]);
-  Serial.println();
-  cnt += 1;
- 
-}
+/**
+  Performs nscan number of scans of the 4 ADC channels, storing the results
+  into buf.
 
-uint8_t trigstate = LOW;
-void loop0() {
-  // XXX trigger on a rising edge
-  if (trigstate != digitalRead(_TRIG_PIN) && trigstate == HIGH) {
-    trigcnt += 1;
-    trigstate = !trigstate;
-  }
+  Note that if there is insufficient storage space (_BUF_SIZE), scan will be
+  prematurely terminated.
+  */
+void scan_channels(uint16_t nscans) {
+  // prime the ADS7825 to scan channel 0
+  read_analog(0);
 
-  if (trigcnt >= 10) {
-    trigcnt = 0;
-    buf[0] = read_analog(1);
-    buf[1] = read_analog(2);
-    buf[2] = read_analog(3);
-    buf[3] = read_analog(0);
+  // reset back to start of buffer
+  writepos = 0;
 
-    Serial.print(cnt);
-    Serial.print(" ");
-    Serial.print(buf[0]);
-    Serial.print(" ");
-    Serial.print(buf[1]);
-    Serial.print(" ");
-    Serial.print(buf[2]);
-    Serial.print(" ");
-    Serial.print(buf[3]);
-    Serial.println();
-    cnt += 1;
+  while (nscans) {
+    if (trigcnt>=_DIVIDER) {
+      trigcnt = 0;
+      if (writepos < _BUF_SIZE) {
+        buf[writepos+0] = read_analog(1);
+        buf[writepos+1] = read_analog(2);
+        buf[writepos+2] = read_analog(3);
+        buf[writepos+3] = read_analog(0);
+
+        writepos += 4;
+        nscans -= 1;
+      } else return; 
+    }
   }
 }
