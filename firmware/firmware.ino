@@ -5,8 +5,8 @@
  * The software responds to the following serial commands:
  *
  * - r:  read all 4 channels, return results immediately via serial
- * - sN: performs N scans of all 4 channels. Results are stored until p is
- *       issued.
+ * - sN.: performs N scans of all 4 channels. Results are stored until p is
+ *       issued. Note the full stop, this is required!
  * - p: prints the buffer, used to retrive values from sN
  */
 
@@ -68,9 +68,9 @@ void setup() {
   Waits for BUSY to go high
   */
 inline void wait_busy() {
-  while(digitalRead(_BUSY) == LOW) {
-    digitalWrite(_LED, ~digitalRead(_BUSY));
-  }
+  digitalWrite(_LED, LOW);
+  while(digitalRead(_BUSY) == LOW);
+  digitalWrite(_LED, HIGH);
 }
 
 /**
@@ -135,7 +135,17 @@ void loop() {
     Serial.print(read_analog(3));Serial.print(" ");
     Serial.print(read_analog(0));Serial.println();
   } else if (c == 's') {
-    int nscans = Serial.parseInt();
+    // XXX we don't use parseInt beause it takes a second to complete waiting
+    // for more user input
+    uint16_t nscans = 0;
+    while (c != '.') {
+      c = Serial.read();
+      if (c >= '0') {
+        c -= '0';
+        nscans *= 10;
+        nscans += c;
+      }
+    }
     scan_channels(nscans);
   } else if (c == 'p') {
     for (int idx = 0; idx < writepos; idx += 4) {
@@ -164,7 +174,7 @@ void scan_channels(uint16_t nscans) {
 
   while (nscans) {
     if (trigcnt>=_DIVIDER) {
-      trigcnt = 0;
+      trigcnt -= _DIVIDER;
       if (writepos < _BUF_SIZE) {
         buf[writepos+0] = read_analog(1);
         buf[writepos+1] = read_analog(2);
