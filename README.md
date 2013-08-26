@@ -9,7 +9,8 @@ Communication
 The program supports 3 commands:
 
 - `r`: reads the 4 channels, printing the results as ASCII to serial immediately.
-- `sN:`: performs `N` scans of the 4 channels, storing the results in a buffer.
+- `sN.:`: performs `N` scans of the 4 channels, storing the results in a buffer.
+          Note that the full stop (.) is required
 - `p`: prints the buffered data from a previous `sN` command.
 
 Notes
