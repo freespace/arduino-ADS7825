@@ -96,10 +96,12 @@ int16_t read_analog(uint8_t next_chan) {
   
   // begin a conversion
   digitalWrite(_RC, LOW);
+
   // t1, Convert Pulse Width, must be no less than 0.04 us and no more than
   // 12 us. In other words, no less than 40ns, and since one cycle at 16 MHz
   // is 62.5 ns, we can just delay for a single cycle
   __builtin_avr_delay_cycles(1);
+
   digitalWrite(_RC, HIGH);
 
   interrupts();
@@ -107,8 +109,12 @@ int16_t read_analog(uint8_t next_chan) {
   // wait for busy to go high
   wait_busy();
 
-  // elect the high byte for reading
+  // select the high byte for reading
   digitalWrite(_BYTE, LOW);
+  
+  // Since we are running at 16MHz, each cycle is 62.5 ns. t12, bus access and
+  // BYTE delay, is no more than 83 ns from datasheet, so 2 nops will cover it.
+  __builtin_avr_delay_cycles(2);
 
   // use port manipulation to read the data pins. Note that our pinmapping
   // is such that port C maps exactly onto the parallel output from the
@@ -117,12 +123,8 @@ int16_t read_analog(uint8_t next_chan) {
 
   // now for the low byte
   digitalWrite(_BYTE, HIGH);
-  // Since we are running at 16MHz, each cycle is 62.5 ns. t12, bus access and
-  // BYTE delay is no more than 83 ns from datasheet, so 2 nops will cover it.
   __builtin_avr_delay_cycles(2);
-
   uint8_t lbyte = PINC;
-
 
   return (hbyte<<8 | lbyte);
 }
