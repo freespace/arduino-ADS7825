@@ -10,6 +10,12 @@
  * - p: prints the buffer, used to retrive values from sN
  */
 
+#ifndef __builtin_avr_delay_cycles
+void __builtin_avr_delay_cycles(unsigned long __n) {
+  while(__n) __n--;
+}
+#endif
+
 // Adding _ prefix b/c arduino api uses some of these names otherwise
 #define     _A0       (22)  // PB3
 #define     _A1       (23)  // PB4
@@ -90,7 +96,10 @@ int16_t read_analog(uint8_t next_chan) {
   
   // begin a conversion
   digitalWrite(_RC, LOW);
-  delayMicroseconds(1);
+  // t1, Convert Pulse Width, must be no less than 0.04 us and no more than
+  // 12 us. In other words, no less than 40ns, and since one cycle at 16 MHz
+  // is 62.5 ns, we can just delay for a single cycle
+  __builtin_avr_delay_cycles(1);
   digitalWrite(_RC, HIGH);
 
   interrupts();
@@ -108,7 +117,9 @@ int16_t read_analog(uint8_t next_chan) {
 
   // now for the low byte
   digitalWrite(_BYTE, HIGH);
-  delayMicroseconds(1);
+  // Since we are running at 16MHz, each cycle is 62.5 ns. t12, bus access and
+  // BYTE delay is no more than 83 ns from datasheet, so 2 nops will cover it.
+  __builtin_avr_delay_cycles(2);
 
   uint8_t lbyte = PINC;
 
@@ -171,6 +182,9 @@ void scan_channels(uint16_t nscans) {
 
   // reset back to start of buffer
   writepos = 0;
+
+  // reset trigcnt so we don't trigger prematurely
+  trigcnt = 0;
 
   while (nscans) {
     if (trigcnt>=_DIVIDER) {
