@@ -5,13 +5,18 @@
  * The software responds to the following serial commands:
  *
  * - r:  read all 4 channels, return results immediately via serial
- * - sN.: performs N scans of all 4 channels. Results are stored until p is
- *       issued. Note the full stop, this is required!
- * - p: prints the buffer, used to retrive values from sN
+ * - s:  on receiving this command, the arduino will immediately begin to
+ *       capture data into its buffer when triggered, stopping when the
+ *       buffer is filled.
+ *
+ * - p:  prints the current valid contents of the buffer. One line is emitted
+ *       for each scan of 4 channels, each line containing 4 codes separated
+ *       by space. The last line of buffer content is followed by a line
+ *       containing 'END'. All lines are terminated by '\n'.
  */
 
 #ifndef __builtin_avr_delay_cycles
-void __builtin_avr_delay_cycles(unsigned long __n) {
+inline void __builtin_avr_delay_cycles(unsigned long __n) {
   while(__n) __n--;
 }
 #endif
@@ -85,15 +90,12 @@ inline void wait_busy() {
 
   Returned value is 2s complemented 16 bit integer.
   */
-int16_t read_analog(uint8_t next_chan) {
+inline int16_t read_analog(uint8_t next_chan) {
 
   // select the channel for the next read
   digitalWrite(_A0, next_chan&0x1?HIGH:LOW);
   digitalWrite(_A1, next_chan&0x2?HIGH:LOW);
 
-  // we really don't need any interrupts messing the timings in here up
-  noInterrupts();
-  
   // begin a conversion
   digitalWrite(_RC, LOW);
 
@@ -104,10 +106,8 @@ int16_t read_analog(uint8_t next_chan) {
 
   digitalWrite(_RC, HIGH);
 
-  interrupts();
-
-  // wait for busy to go high
-  wait_busy();
+  // t4, BUSY LOE, is at most 21 us
+  delayMicroseconds(22);
 
   // select the high byte for reading
   digitalWrite(_BYTE, LOW);
@@ -119,24 +119,32 @@ int16_t read_analog(uint8_t next_chan) {
   // use port manipulation to read the data pins. Note that our pinmapping
   // is such that port C maps exactly onto the parallel output from the
   // ADS7825.
-  uint8_t hbyte = PINC;
+  uint16_t code = PINC;
+  code <<=8;
 
   // now for the low byte
   digitalWrite(_BYTE, HIGH);
   __builtin_avr_delay_cycles(2);
-  uint8_t lbyte = PINC;
+  code |= PINC;
 
-  return (hbyte<<8 | lbyte);
-}
-
-volatile uint8_t trigcnt = 0;
-void trig_ISR() {
-  trigcnt += 1;
+  return code;
 }
 
 // buffer for 16bit values from the ADC
-int16_t buf[_BUF_SIZE];
-uint16_t writepos = 0;
+volatile int16_t buf[_BUF_SIZE];
+volatile uint16_t writepos = 0;
+volatile uint8_t trigcnt = 0;
+void trig_ISR() {
+  if (++trigcnt == _DIVIDER) {
+    trigcnt = 0;
+    if (writepos < _BUF_SIZE) {
+      buf[writepos++] = read_analog(1);
+      buf[writepos++] = read_analog(2);
+      buf[writepos++] = read_analog(3);
+      buf[writepos++] = read_analog(0);
+    }
+  }
+}
 
 void loop() {
   int c = Serial.read();
@@ -148,18 +156,12 @@ void loop() {
     Serial.print(read_analog(3));Serial.print(" ");
     Serial.print(read_analog(0));Serial.println();
   } else if (c == 's') {
-    // XXX we don't use parseInt beause it takes a second to complete waiting
-    // for more user input
-    uint16_t nscans = 0;
-    while (c != '.') {
-      c = Serial.read();
-      if (c >= '0') {
-        c -= '0';
-        nscans *= 10;
-        nscans += c;
-      }
-    }
-    scan_channels(nscans);
+    noInterrupts();
+    // prime the first channel
+    read_analog(0);
+    trigcnt = 0;
+    writepos = 0;
+    interrupts();
   } else if (c == 'p') {
     for (int idx = 0; idx < writepos; idx += 4) {
       Serial.print(idx/4);Serial.print(" ");
@@ -168,38 +170,6 @@ void loop() {
       Serial.print(buf[idx+2]);Serial.print(" ");
       Serial.print(buf[idx+3]);Serial.println();
     }
+    Serial.println("END");
   } else if (c != -1) Serial.println("???");
-}
-
-/**
-  Performs nscan number of scans of the 4 ADC channels, storing the results
-  into buf.
-
-  Note that if there is insufficient storage space (_BUF_SIZE), scan will be
-  prematurely terminated.
-  */
-void scan_channels(uint16_t nscans) {
-  // prime the ADS7825 to scan channel 0
-  read_analog(0);
-
-  // reset back to start of buffer
-  writepos = 0;
-
-  // reset trigcnt so we don't trigger prematurely
-  trigcnt = 0;
-
-  while (nscans) {
-    if (trigcnt>=_DIVIDER) {
-      trigcnt -= _DIVIDER;
-      if (writepos < _BUF_SIZE) {
-        buf[writepos+0] = read_analog(1);
-        buf[writepos+1] = read_analog(2);
-        buf[writepos+2] = read_analog(3);
-        buf[writepos+3] = read_analog(0);
-
-        writepos += 4;
-        nscans -= 1;
-      } else return; 
-    }
-  }
 }
