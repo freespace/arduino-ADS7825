@@ -27,8 +27,8 @@ int adc_init(void) {
   Returned value is 2s complemented 16 bit integer.
   */
 int16_t adc_read_analog(uint8_t next_chan) {
-  // select the channel for the next read
-  CONTROL_PORT = (CONTROL_PORT&0xFC) | (next_chan&0xF3);
+  next_chan&0x1?SET(CONTROL_PORT, A0):CLEAR(CONTROL_PORT, A0);
+  next_chan&0x2?SET(CONTROL_PORT, A1):CLEAR(CONTROL_PORT, A1);
 
   // we really don't need any interrupts messing the timings in here up
   cli();
