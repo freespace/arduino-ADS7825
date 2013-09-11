@@ -51,17 +51,32 @@ int main(void) {
   uart_init();
   adc_init();
   timer_init(10);
+
+  // prime the next channel to be read as channel 0
+  adc_read_analog(0);
   
   printf("Ready\n");
 
   for (;;) {
     int c = getchar();
     if (c == 'r') {
+      // prime channel 0 for read, just in case, even though we should always
+      // end with channel 0 primed for next read
+      adc_read_analog(0);
+
+      // we don't do this inside a printf statement because we need the reads
+      // to occur in a specific order, and function argument evaluation order
+      // is not guaranteed
+      int chan0 = adc_read_analog(1);
+      int chan1 = adc_read_analog(2);
+      int chan2 = adc_read_analog(3);
+      int chan3 = adc_read_analog(0);
+
       printf("%6d, %6d, %6d, %6d\n",
-          adc_read_analog(1),
-          adc_read_analog(2),
-          adc_read_analog(3),
-          adc_read_analog(0));
+          chan0,
+          chan1,
+          chan2,
+          chan3);
     } else if (c == 's') {
       // disable interrupts briefly so we can be sure no one is touching
       // buffer
@@ -83,7 +98,8 @@ int main(void) {
     } else if (c == 'p') {
       int idx;
       for (idx = 0; idx < buffer.writepos; idx += 4) {
-      printf("%d %d %d %d\n",
+      printf("%d %d %d %d %d\n",
+          idx,
           buffer.data[idx+0],
           buffer.data[idx+1],
           buffer.data[idx+2],
