@@ -14,14 +14,15 @@
 void timer_init(uint8_t top) {
   // setup counter0 issue an interrupt every time its value reaches top
 
-  // OC0A and OC0B disconnected, normal waveform generation mode
+  // OC0A and OC0B disconnected
+  // CTC waveform generation mode, clearing the timer on match
   TCCR0A = 0x00 | _BV(WGM01);
 
-  // CTC waveform generation mode, clearing the timer on match
+  // Set T0 as external clock, clock on falling edge
   TCCR0B = 0x00 | _BV(CS02) | _BV(CS01);
 
   // set the value at which we roll over, using OCR0A
-  OCR0A = top;
+  OCR0A = top-1;
 
   // issue an interrupt when OCR0A matches TCNT0
   TIMSK0 = 0x00 | _BV(OCIE0A);
@@ -41,10 +42,18 @@ volatile Buffer buffer;
 
 ISR(TIMER0_COMPA_vect) {
   if (buffer.writepos < BUFFER_SIZE) {
-    buffer.data[buffer.writepos++] = adc_read_analog(1);
-    buffer.data[buffer.writepos++] = adc_read_analog(2);
-    buffer.data[buffer.writepos++] = adc_read_analog(3);
-    buffer.data[buffer.writepos++] = adc_read_analog(0);
+    // doing buffer.data[buffer.writepos++] = ... is much slower than
+    // doing what is done now. This makes things so slow we can't keep
+    // up with what is a relatively slow external clock! This is much faster.
+    // Will need to investigate why if time permits. Hypothesis: 16bit
+    // increments are very slow, and cheaper to do one increment by 4 then 4
+    // increment by ones due to lack of dedicate instructions for 16bit
+    // increments.
+    buffer.data[buffer.writepos+0] = adc_read_analog(1);
+    buffer.data[buffer.writepos+1] = adc_read_analog(2);
+    buffer.data[buffer.writepos+2] = adc_read_analog(3);
+    buffer.data[buffer.writepos+3] = adc_read_analog(0);
+    buffer.writepos+=4;
   }
 }
 
