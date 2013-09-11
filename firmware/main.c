@@ -120,6 +120,13 @@ int main(void) {
           buffer.data[idx+3]);
       }
       printf("END\n");
+    } else if (c == 'b') {
+      // sends the buffer in binary. The first 2 bytes indicate the number of
+      // bytes to follow. All data are in fact 16bit integers, sent LSB first
+      // since AVRs are little endian machines
+      uint16_t len = sizeof(buffer.data);
+      fwrite(&len, sizeof len, 1, stdout);
+      fwrite(buffer.data, sizeof buffer.data[0], BUFFER_SIZE, stdout);
     }
   }
 
