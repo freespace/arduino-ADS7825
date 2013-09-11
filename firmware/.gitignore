@@ -1,0 +1,10 @@
+*.o
+*.map
+*.elf
+*.bin
+*.hex
+*.srec
+*.map
+*.swp
+*.lst
+*.out
