@@ -62,6 +62,24 @@ int main(void) {
           adc_read_analog(2),
           adc_read_analog(3),
           adc_read_analog(0));
+    } else if (c == 's') {
+      // disable interrupts briefly so we can be sure no one is touching
+      // buffer
+      cli();
+
+      // reset to start of the buffer
+      buffer.writepos = 0;
+
+      // prime channel 0 for read, just in case, even though we should always
+      // end with channel 0 primed for next read
+      adc_read_analog(0);
+
+      // set the counter to 0 so we don't trigger prematurely in case TCNT0
+      // has left over values
+      TCNT0 = 0;
+
+      // re-enable interrupts
+      sei();
     } else if (c == 'p') {
       int idx;
       for (idx = 0; idx < buffer.writepos; idx += 4) {
