@@ -1,4 +1,7 @@
 /**
+ ****************************************************************************
+ *THIS CODE IS OBSOLETE. SEE main.c IN PROJECT ROOT FOR THE CURRENT VERSION *
+ ****************************************************************************
  * This firmware is intended to interface with a ADS7825 from TI/BB, and
  * provide digital codes to the control software over USB-Serial.
  * 
