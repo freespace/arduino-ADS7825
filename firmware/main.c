@@ -8,7 +8,8 @@
 
 #include "ads7825.h"
 
-#define BUFFER_SIZE               (512)
+// Make room for 512 scans of each of 4 channels
+#define BUFFER_SIZE               (512 * 4)
 
 void timer_init(uint8_t top) {
   // setup counter0 issue an interrupt every time its value reaches top
@@ -99,7 +100,7 @@ int main(void) {
       int idx;
       for (idx = 0; idx < buffer.writepos; idx += 4) {
       printf("%d %d %d %d %d\n",
-          idx,
+          idx/4,
           buffer.data[idx+0],
           buffer.data[idx+1],
           buffer.data[idx+2],
