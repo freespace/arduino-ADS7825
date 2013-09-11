@@ -8,10 +8,15 @@ Communication
 
 The program supports 3 commands:
 
-- `r`: reads the 4 channels, printing the results as ASCII to serial immediately.
-- `sN.:`: performs `N` scans of the 4 channels, storing the results in a buffer.
-          Note that the full stop (.) is required
-- `p`: prints the buffered data from a previous `sN` command.
+- `r`:  reads the 4 channels, printing the results as ASCII to serial immediately.
+- `s:`: starts a continuous scan of all 4 channels whenever an external trigger
+        is received, possibly after some frequency division. Data is stored
+        sequentially into an internal buffer. Scan stops when buffer is full.
+- `p`:  prints the contents of the buffer in ASCII, up to the last write
+        position.
+- `b`:  prints the contents of the buffer in binary. The byte stream will
+        contain 16 bit signed integers, send LSB first. The first 16 bit
+        integer is the number of 16 bit integers to follow.
 
 Notes
 =====
