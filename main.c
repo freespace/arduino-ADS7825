@@ -73,6 +73,11 @@ int main(void) {
 
   for (;;) {
     int c = getchar();
+
+    // disable interrupts because we don't want the buffer being written
+    // to for 'p' or 'b', nor writepos being updated
+    cli();
+
     if (c == 'r') {
       // prime channel 0 for read, just in case, even though we should always
       // end with channel 0 primed for next read
@@ -92,10 +97,6 @@ int main(void) {
           chan2,
           chan3);
     } else if (c == 's') {
-      // disable interrupts briefly so we can be sure no one is touching
-      // buffer
-      cli();
-
       // reset to start of the buffer
       buffer.writepos = 0;
 
@@ -107,8 +108,6 @@ int main(void) {
       // has left over values
       TCNT0 = 0;
 
-      // re-enable interrupts
-      sei();
     } else if (c == 'p') {
       int idx;
       for (idx = 0; idx < buffer.writepos; idx += 4) {
@@ -127,6 +126,9 @@ int main(void) {
       fwrite((void *)&buffer.writepos, sizeof buffer.writepos, 1, stdout);
       fwrite((void *)buffer.data, sizeof buffer.data[0], buffer.writepos, stdout);
     }
+
+    // re-enable interrupts after processing serial commands
+    sei();
   }
 
   return 0;
