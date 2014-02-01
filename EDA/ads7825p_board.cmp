@@ -1,0 +1,101 @@
+Cmp-Mod V01 Created by CvPCB (2011-05-25)-stable date = Fri 24 Jan 2014 17:12:55 GMT
+
+BeginCmp
+TimeStamp = /52E296C6;
+Reference = C1;
+ValeurCmp = 2.2uF;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E296CD;
+Reference = C2;
+ValeurCmp = C;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E298FF;
+Reference = C3;
+ValeurCmp = C;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E298E4;
+Reference = C4;
+ValeurCmp = C;
+IdModule  = C2;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E298AB;
+Reference = D1;
+ValeurCmp = LED;
+IdModule  = LED-3MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E29793;
+Reference = OC1;
+ValeurCmp = 4N35;
+IdModule  = DIP-6__300_ELL;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E29529;
+Reference = P1;
+ValeurCmp = CONN_5_V;
+IdModule  = bornier5;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E29659;
+Reference = P2;
+ValeurCmp = CONN_14;
+IdModule  = pin_array_8x2;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E29880;
+Reference = P3;
+ValeurCmp = CONN_2;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E297A3;
+Reference = P4;
+ValeurCmp = CONN_2_V;
+IdModule  = bornier2;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E29819;
+Reference = R1;
+ValeurCmp = 100R;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E298B8;
+Reference = R2;
+ValeurCmp = 1k;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E297B2;
+Reference = R3;
+ValeurCmp = 47R;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E294C6;
+Reference = U1;
+ValeurCmp = ADS7825;
+IdModule  = DIP-28__300_ELL;
+EndCmp
+
+EndListe

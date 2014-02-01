@@ -1,0 +1,154 @@
+# EESchema Netlist Version 1.1 created  Fri 24 Jan 2014 17:12:55 GMT
+(
+ ( /52E296C6 C1 C1 2.2uF
+  ( 1 N-000015 )
+  ( 2 GND )
+ )
+ ( /52E296CD C1 C2 C
+  ( 1 GND )
+  ( 2 N-000014 )
+ )
+ ( /52E298FF C1 C3 C
+  ( 1 VCC )
+  ( 2 GND )
+ )
+ ( /52E298E4 C2 C4 C
+  ( 1 VCC )
+  ( 2 GND )
+ )
+ ( /52E298AB LED-3MM D1 LED
+  ( 1 N-000001 )
+  ( 2 GND )
+ )
+ ( /52E29793 DIP-6__300_ELL OC1 4N35
+  ( 1 N-000005 )
+  ( 2 GND )
+  ( 4 GND )
+  ( 5 ? )
+  ( 6 N-000003 )
+ )
+ ( /52E29529 bornier5 P1 CONN_5_V
+  ( 1 GND )
+  ( 2 N-000016 )
+  ( 3 N-000017 )
+  ( 4 N-000011 )
+  ( 5 N-000008 )
+ )
+ ( /52E29659 pin_array_8x2 P2 CONN_14
+  ( 1 N-000003 )
+  ( 2 N-000012 )
+  ( 3 N-000022 )
+  ( 4 N-000009 )
+  ( 5 N-000018 )
+  ( 6 N-000013 )
+  ( 7 N-000019 )
+  ( 8 N-000023 )
+  ( 9 N-000020 )
+  ( 10 N-000024 )
+  ( 11 N-000010 )
+  ( 12 N-000025 )
+  ( 13 N-000021 )
+  ( 14 N-000026 )
+ )
+ ( /52E29880 PIN_ARRAY_2X1 P3 CONN_2
+  ( 1 GND )
+  ( 2 VCC )
+ )
+ ( /52E297A3 bornier2 P4 CONN_2_V
+  ( 1 GND )
+  ( 2 N-000004 )
+ )
+ ( /52E29819 R3 R1 100R
+  ( 1 N-000003 )
+  ( 2 VCC )
+ )
+ ( /52E298B8 R3 R2 1k
+  ( 1 VCC )
+  ( 2 N-000001 )
+ )
+ ( /52E297B2 R3 R3 47R
+  ( 1 N-000005 )
+  ( 2 N-000004 )
+ )
+ ( /52E294C6 DIP-28__300_ELL U1 ADS7825
+  ( 1 GND )
+  ( 2 N-000016 )
+  ( 3 N-000017 )
+  ( 4 N-000011 )
+  ( 5 N-000008 )
+  ( 6 N-000015 )
+  ( 7 N-000014 )
+  ( 8 GND )
+  ( 9 N-000026 )
+  ( 10 N-000021 )
+  ( 11 N-000025 )
+  ( 12 N-000010 )
+  ( 13 N-000024 )
+  ( 14 GND )
+  ( 15 N-000020 )
+  ( 16 N-000023 )
+  ( 17 N-000019 )
+  ( 18 N-000013 )
+  ( 19 N-000018 )
+  ( 20 VCC )
+  ( 21 N-000009 )
+  ( 22 N-000022 )
+  ( 23 GND )
+  ( 24 N-000012 )
+  ( 25 GND )
+  ( 26 GND )
+  ( 27 VCC )
+  ( 28 VCC )
+ )
+)
+*
+{ Allowed footprints by component:
+$component C1
+ SM*
+ C?
+ C1-1
+$endlist
+$component C2
+ SM*
+ C?
+ C1-1
+$endlist
+$component C3
+ SM*
+ C?
+ C1-1
+$endlist
+$component C4
+ SM*
+ C?
+ C1-1
+$endlist
+$component D1
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component R1
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R2
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R3
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$endfootprintlist
+}
