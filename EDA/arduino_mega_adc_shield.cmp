@@ -1,0 +1,94 @@
+Cmp-Mod V01 Created by CvPCB (2011-05-25)-stable date = Thu 23 Jan 2014 16:44:42 GMT
+
+BeginCmp
+TimeStamp = /52E134F6;
+Reference = C1;
+ValeurCmp = 0.1uF;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E134FE;
+Reference = C2;
+ValeurCmp = 10uF;
+IdModule  = C2;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E132A4;
+Reference = C3;
+ValeurCmp = 2.2uF;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E1323C;
+Reference = C4;
+ValeurCmp = 2.2uF;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E13657;
+Reference = D1;
+ValeurCmp = LED;
+IdModule  = LED-3MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E136CB;
+Reference = OC1;
+ValeurCmp = 4N35;
+IdModule  = optocoupler-DIL06;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E13A22;
+Reference = P1;
+ValeurCmp = CONN_5_V;
+IdModule  = bornier5_V;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E13A73;
+Reference = P2;
+ValeurCmp = CONN_2_V;
+IdModule  = bornier2_V;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E13660;
+Reference = R1;
+ValeurCmp = 1K;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E13AA4;
+Reference = R2;
+ValeurCmp = 47;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E13AE6;
+Reference = R3;
+ValeurCmp = 100;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E12849;
+Reference = SHIELD1;
+ValeurCmp = ARDUINO_MEGA_SHIELD;
+IdModule  = ARDUINO_MEGA_SHIELD;
+EndCmp
+
+BeginCmp
+TimeStamp = /52E12F84;
+Reference = U1;
+ValeurCmp = ADS7825;
+IdModule  = DIP-28__300_ELL;
+EndCmp
+
+EndListe

@@ -1,0 +1,320 @@
+# EESchema Netlist Version 1.1 created  Fri 24 Jan 2014 15:35:41 GMT
+(
+ ( /52E13AE6 $noname  R3 100 {Lib=R}
+  (    1 N-000026 )
+  (    2 N-000033 )
+ )
+ ( /52E13AA4 $noname  R2 47 {Lib=R}
+  (    1 N-000025 )
+  (    2 N-000020 )
+ )
+ ( /52E13A73 $noname  P2 CONN_2_V {Lib=CONN_2_V}
+  (    1 GND )
+  (    2 N-000025 )
+ )
+ ( /52E13A22 $noname  P1 CONN_5_V {Lib=CONN_5_V}
+  (    1 GND )
+  (    2 N-000024 )
+  (    3 N-000023 )
+  (    4 N-000022 )
+  (    5 N-000021 )
+ )
+ ( /52E136CB optocoupler-DIL06  OC1 4N35 {Lib=4N35}
+  (    1 N-000020 )
+  (    2 GND )
+  (    4 GND )
+  (    5 ? )
+  (    6 N-000033 )
+ )
+ ( /52E13660 $noname  R1 1K {Lib=R}
+  (    1 N-000006 )
+  (    2 N-000004 )
+ )
+ ( /52E13657 $noname  D1 LED {Lib=LED}
+  (    1 N-000004 )
+  (    2 GND )
+ )
+ ( /52E134FE $noname  C2 10uF {Lib=C}
+  (    1 N-000006 )
+  (    2 GND )
+ )
+ ( /52E134F6 $noname  C1 0.1uF {Lib=C}
+  (    1 N-000006 )
+  (    2 GND )
+ )
+ ( /52E132A4 $noname  C3 2.2uF {Lib=C}
+  (    1 GND )
+  (    2 N-000001 )
+ )
+ ( /52E1323C $noname  C4 2.2uF {Lib=C}
+  (    1 GND )
+  (    2 N-000003 )
+ )
+ ( /52E12F84 MODULE  U1 ADS7825 {Lib=ADS7825}
+  (    1 GND )
+  (    2 N-000024 )
+  (    3 N-000023 )
+  (    4 N-000022 )
+  (    5 N-000021 )
+  (    6 N-000001 )
+  (    7 N-000003 )
+  (    8 GND )
+  (    9 N-000062 )
+  (   10 N-000010 )
+  (   11 N-000089 )
+  (   12 N-000085 )
+  (   13 N-000081 )
+  (   14 GND )
+  (   15 N-000009 )
+  (   16 N-000047 )
+  (   17 N-000008 )
+  (   18 N-000007 )
+  (   19 N-000090 )
+  (   20 N-000006 )
+  (   21 N-000082 )
+  (   22 N-000091 )
+  (   23 GND )
+  (   24 N-000076 )
+  (   25 GND )
+  (   26 GND )
+  (   27 N-000006 )
+  (   28 N-000006 )
+ )
+ ( /52E12849 $noname  SHIELD1 ARDUINO_MEGA_SHIELD {Lib=ARDUINO_MEGA_SHIELD}
+  (    0 ? )
+  (    1 ? )
+  (    2 ? )
+  (    3 ? )
+  (    4 ? )
+  (    5 ? )
+  (   5V N-000026 )
+  (    6 ? )
+  (    7 ? )
+  (    8 ? )
+  (    9 ? )
+  (   10 ? )
+  (   11 ? )
+  (   12 ? )
+  (   13 ? )
+  (   14 ? )
+  (   15 ? )
+  (   16 ? )
+  (   17 ? )
+  (   18 ? )
+  (   19 ? )
+  (   20 ? )
+  (   21 ? )
+  (   22 N-000090 )
+  (   23 N-000007 )
+  (   24 N-000082 )
+  (   25 N-000091 )
+  (   26 N-000076 )
+  (   27 ? )
+  (   28 ? )
+  (   29 ? )
+  (   30 N-000062 )
+  (   31 N-000010 )
+  (   32 N-000089 )
+  (   33 N-000085 )
+  (   34 N-000081 )
+  (   35 N-000009 )
+  (   36 N-000047 )
+  (   37 N-000008 )
+  (   38 N-000033 )
+  (   39 ? )
+  (   40 ? )
+  (   41 ? )
+  (   42 ? )
+  (   43 ? )
+  (   44 ? )
+  (   45 ? )
+  (   46 ? )
+  (   47 ? )
+  (   48 ? )
+  (   49 ? )
+  (   50 ? )
+  (   51 ? )
+  (   52 ? )
+  (   53 ? )
+  (  3V3 ? )
+  ( 5V_4 N-000006 )
+  ( 5V_5 ? )
+  (  AD0 ? )
+  (  AD1 ? )
+  (  AD2 ? )
+  (  AD3 ? )
+  (  AD4 ? )
+  (  AD5 ? )
+  (  AD6 ? )
+  (  AD7 ? )
+  (  AD8 ? )
+  (  AD9 ? )
+  ( AD10 ? )
+  ( AD11 ? )
+  ( AD12 ? )
+  ( AD13 ? )
+  ( AD14 ? )
+  ( AD15 ? )
+  ( AREF ? )
+  ( GND1 ? )
+  ( GND2 GND )
+  ( GND3 GND )
+  ( GND4 ? )
+  ( GND5 ? )
+  (  RST ? )
+  ( V_IN ? )
+ )
+)
+*
+{ Allowed footprints by component:
+$component R3
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R2
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R1
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component D1
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component C2
+ SM*
+ C?
+ C1-1
+$endlist
+$component C1
+ SM*
+ C?
+ C1-1
+$endlist
+$component C3
+ SM*
+ C?
+ C1-1
+$endlist
+$component C4
+ SM*
+ C?
+ C1-1
+$endlist
+$endfootprintlist
+}
+{ Pin List by Nets
+Net 1 "" ""
+ U1 6
+ C3 2
+Net 2 "GND" "GND"
+ SHIELD1 GND2
+ SHIELD1 GND3
+ P2 1
+ P1 1
+ OC1 2
+ C1 2
+ U1 26
+ U1 25
+ U1 8
+ U1 14
+ OC1 4
+ U1 23
+ U1 1
+ D1 2
+ C4 1
+ C2 2
+ C3 1
+Net 3 "" ""
+ C4 2
+ U1 7
+Net 4 "" ""
+ R1 2
+ D1 1
+Net 6 "" ""
+ SHIELD1 5V_4
+ U1 27
+ U1 20
+ U1 28
+ R1 1
+ C2 1
+ C1 1
+Net 7 "" ""
+ U1 18
+ SHIELD1 23
+Net 8 "" ""
+ SHIELD1 37
+ U1 17
+Net 9 "" ""
+ U1 15
+ SHIELD1 35
+Net 10 "" ""
+ U1 10
+ SHIELD1 31
+Net 20 "" ""
+ R2 2
+ OC1 1
+Net 21 "" ""
+ U1 5
+ P1 5
+Net 22 "" ""
+ P1 4
+ U1 4
+Net 23 "" ""
+ U1 3
+ P1 3
+Net 24 "" ""
+ U1 2
+ P1 2
+Net 25 "" ""
+ R2 1
+ P2 2
+Net 26 "" ""
+ R3 1
+ SHIELD1 5V
+Net 33 "" ""
+ OC1 6
+ SHIELD1 38
+ R3 2
+Net 47 "" ""
+ SHIELD1 36
+ U1 16
+Net 62 "" ""
+ SHIELD1 30
+ U1 9
+Net 76 "" ""
+ U1 24
+ SHIELD1 26
+Net 81 "" ""
+ SHIELD1 34
+ U1 13
+Net 82 "" ""
+ SHIELD1 24
+ U1 21
+Net 85 "" ""
+ SHIELD1 33
+ U1 12
+Net 89 "" ""
+ U1 11
+ SHIELD1 32
+Net 90 "" ""
+ U1 19
+ SHIELD1 22
+Net 91 "" ""
+ U1 22
+ SHIELD1 25
+}
+#End
