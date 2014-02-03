@@ -11,8 +11,8 @@
 // Make room for 512 scans of each of 4 channels
 #define BUFFER_SIZE               (512 * 4)
 
-void timer_init(uint8_t top) {
-  // setup counter0 issue an interrupt every time its value reaches top
+void timer_init(uint8_t n) {
+  // setup counter0 issue an interrupt for every n external trigger seen.
 
   // OC0A and OC0B disconnected
   // CTC waveform generation mode, clearing the timer on match
@@ -21,8 +21,16 @@ void timer_init(uint8_t top) {
   // Set T0 as external clock, clock on falling edge
   TCCR0B = 0x00 | _BV(CS02) | _BV(CS01);
 
-  // set the value at which we roll over, using OCR0A
-  OCR0A = top-1;
+  // set the value at which we roll over, using OCR0A. We enforce the
+  // condition that n is >=1 because triggering for every 0 external trigger
+  // seen makes no sense.
+  n = fmaxf(1, n);
+
+  // the -1 is because TCNT0 goes from top-1, top, 0, 1, ..., top-1, ...  with
+  // state changing on each trigger. Thus to have an interrupt for every other
+  // trigger (n=2), you need OCR0A=1, and TCNT0 will go 0, 1, 0, 1, 0... with
+  // an interrupt issued for everytime TCNT0 == OCR0A
+  OCR0A = n-1;
 
   // issue an interrupt when OCR0A matches TCNT0
   TIMSK0 = 0x00 | _BV(OCIE0A);
