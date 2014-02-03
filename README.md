@@ -18,7 +18,14 @@ The program supports 3 commands:
         contain 16 bit signed integers, send LSB first. The first 16 bit
         integer is the number of 16 bit integers to follow.
 
+Schematic
+=========
+
+Two version of this board exists. One as an Arduino Mega shield, the other as a standalone board. The arduino shield schematic is shown below.
+
+![Arduino Mega shield schematic](https://raw.github.com/freespace/arduino-ADS7825/master/EDA/arduino_mega_adc_shield.gif)
+
 Notes
 =====
 
-This program is written as a quick hack to replace a broken 16bit ADC in an existing instrument, and thus *is a little crap*.
+This program is written as a quick hack to replace a broken 16bit ADC in an existing instrument, and thus *is a little crap*. The EDA for this project is based on the breadboard version that I had constructed, and as of 3rd of Feb 2014 is untested.
