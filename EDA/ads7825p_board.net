@@ -1,118 +1,108 @@
-# EESchema Netlist Version 1.1 created  Fri 24 Jan 2014 17:12:55 GMT
+# EESchema Netlist Version 1.1 created  Mon 17 Feb 2014 11:56:03 GMT
 (
- ( /52E296C6 C1 C1 2.2uF
-  ( 1 N-000015 )
-  ( 2 GND )
+ ( /52E29659 $noname  P2 CONN_14 {Lib=CONN_14}
+  (    1 N-000026 )
+  (    2 N-000021 )
+  (    3 N-000025 )
+  (    4 N-000006 )
+  (    5 N-000019 )
+  (    6 N-000007 )
+  (    7 N-000018 )
+  (    8 N-000017 )
+  (    9 N-000016 )
+  (   10 N-000014 )
+  (   11 N-000008 )
+  (   12 N-000013 )
+  (   13 N-000012 )
+  (   14 N-000011 )
  )
- ( /52E296CD C1 C2 C
-  ( 1 GND )
-  ( 2 N-000014 )
+ ( /52E298FF $noname  C3 0.1uF {Lib=C}
+  (    1 VCC )
+  (    2 GND )
  )
- ( /52E298FF C1 C3 C
-  ( 1 VCC )
-  ( 2 GND )
+ ( /52E298E4 $noname  C4 10uF {Lib=C}
+  (    1 VCC )
+  (    2 GND )
  )
- ( /52E298E4 C2 C4 C
-  ( 1 VCC )
-  ( 2 GND )
+ ( /52E298B8 $noname  R2 1k {Lib=R}
+  (    1 VCC )
+  (    2 N-000001 )
  )
- ( /52E298AB LED-3MM D1 LED
-  ( 1 N-000001 )
-  ( 2 GND )
+ ( /52E298AB $noname  D1 LED {Lib=LED}
+  (    1 N-000001 )
+  (    2 GND )
  )
- ( /52E29793 DIP-6__300_ELL OC1 4N35
-  ( 1 N-000005 )
-  ( 2 GND )
-  ( 4 GND )
-  ( 5 ? )
-  ( 6 N-000003 )
+ ( /52E29880 $noname  P3 CONN_2 {Lib=CONN_2}
+  (    1 GND )
+  (    2 VCC )
  )
- ( /52E29529 bornier5 P1 CONN_5_V
-  ( 1 GND )
-  ( 2 N-000016 )
-  ( 3 N-000017 )
-  ( 4 N-000011 )
-  ( 5 N-000008 )
+ ( /52E29819 $noname  R1 100R {Lib=R}
+  (    1 N-000026 )
+  (    2 VCC )
  )
- ( /52E29659 pin_array_8x2 P2 CONN_14
-  ( 1 N-000003 )
-  ( 2 N-000012 )
-  ( 3 N-000022 )
-  ( 4 N-000009 )
-  ( 5 N-000018 )
-  ( 6 N-000013 )
-  ( 7 N-000019 )
-  ( 8 N-000023 )
-  ( 9 N-000020 )
-  ( 10 N-000024 )
-  ( 11 N-000010 )
-  ( 12 N-000025 )
-  ( 13 N-000021 )
-  ( 14 N-000026 )
+ ( /52E297B2 $noname  R3 47R {Lib=R}
+  (    1 N-000004 )
+  (    2 N-000003 )
  )
- ( /52E29880 PIN_ARRAY_2X1 P3 CONN_2
-  ( 1 GND )
-  ( 2 VCC )
+ ( /52E297A3 $noname  P4 CONN_2_V {Lib=CONN_2_V}
+  (    1 GND )
+  (    2 N-000003 )
  )
- ( /52E297A3 bornier2 P4 CONN_2_V
-  ( 1 GND )
-  ( 2 N-000004 )
+ ( /52E29793 optocoupler-DIL06  OC1 4N35 {Lib=4N35}
+  (    1 N-000004 )
+  (    2 GND )
+  (    4 GND )
+  (    5 N-000026 )
+  (    6 ? )
  )
- ( /52E29819 R3 R1 100R
-  ( 1 N-000003 )
-  ( 2 VCC )
+ ( /52E296CD $noname  C2 2.2uF {Lib=C}
+  (    1 GND )
+  (    2 N-000020 )
  )
- ( /52E298B8 R3 R2 1k
-  ( 1 VCC )
-  ( 2 N-000001 )
+ ( /52E296C6 $noname  C1 2.2uF {Lib=C}
+  (    1 N-000010 )
+  (    2 GND )
  )
- ( /52E297B2 R3 R3 47R
-  ( 1 N-000005 )
-  ( 2 N-000004 )
+ ( /52E29529 $noname  P1 CONN_5_V {Lib=CONN_5_V}
+  (    1 GND )
+  (    2 N-000022 )
+  (    3 N-000023 )
+  (    4 N-000015 )
+  (    5 N-000009 )
  )
- ( /52E294C6 DIP-28__300_ELL U1 ADS7825
-  ( 1 GND )
-  ( 2 N-000016 )
-  ( 3 N-000017 )
-  ( 4 N-000011 )
-  ( 5 N-000008 )
-  ( 6 N-000015 )
-  ( 7 N-000014 )
-  ( 8 GND )
-  ( 9 N-000026 )
-  ( 10 N-000021 )
-  ( 11 N-000025 )
-  ( 12 N-000010 )
-  ( 13 N-000024 )
-  ( 14 GND )
-  ( 15 N-000020 )
-  ( 16 N-000023 )
-  ( 17 N-000019 )
-  ( 18 N-000013 )
-  ( 19 N-000018 )
-  ( 20 VCC )
-  ( 21 N-000009 )
-  ( 22 N-000022 )
-  ( 23 GND )
-  ( 24 N-000012 )
-  ( 25 GND )
-  ( 26 GND )
-  ( 27 VCC )
-  ( 28 VCC )
+ ( /52E294C6 MODULE  U1 ADS7825 {Lib=ADS7825}
+  (    1 GND )
+  (    2 N-000022 )
+  (    3 N-000023 )
+  (    4 N-000015 )
+  (    5 N-000009 )
+  (    6 N-000010 )
+  (    7 N-000020 )
+  (    8 GND )
+  (    9 N-000011 )
+  (   10 N-000012 )
+  (   11 N-000013 )
+  (   12 N-000008 )
+  (   13 N-000014 )
+  (   14 GND )
+  (   15 N-000016 )
+  (   16 N-000017 )
+  (   17 N-000018 )
+  (   18 N-000007 )
+  (   19 N-000019 )
+  (   20 VCC )
+  (   21 N-000006 )
+  (   22 N-000025 )
+  (   23 GND )
+  (   24 N-000021 )
+  (   25 GND )
+  (   26 GND )
+  (   27 VCC )
+  (   28 VCC )
  )
 )
 *
 { Allowed footprints by component:
-$component C1
- SM*
- C?
- C1-1
-$endlist
-$component C2
- SM*
- C?
- C1-1
-$endlist
 $component C3
  SM*
  C?
@@ -122,6 +112,12 @@ $component C4
  SM*
  C?
  C1-1
+$endlist
+$component R2
+ R?
+ SM0603
+ SM0805
+ R?-*
 $endlist
 $component D1
  LED-3MM
@@ -138,17 +134,120 @@ $component R1
  SM0805
  R?-*
 $endlist
-$component R2
- R?
- SM0603
- SM0805
- R?-*
-$endlist
 $component R3
  R?
  SM0603
  SM0805
  R?-*
 $endlist
+$component C2
+ SM*
+ C?
+ C1-1
+$endlist
+$component C1
+ SM*
+ C?
+ C1-1
+$endlist
 $endfootprintlist
 }
+{ Pin List by Nets
+Net 1 "" ""
+ R2 2
+ D1 1
+Net 2 "VCC" "VCC"
+ C3 1
+ C4 1
+ R1 2
+ U1 20
+ U1 27
+ P3 2
+ U1 28
+ R2 1
+Net 3 "" ""
+ R3 2
+ P4 2
+Net 4 "" ""
+ R3 1
+ OC1 1
+Net 6 "" ""
+ P2 4
+ U1 21
+Net 7 "" ""
+ U1 18
+ P2 6
+Net 8 "" ""
+ P2 11
+ U1 12
+Net 9 "" ""
+ P1 5
+ U1 5
+Net 10 "" ""
+ C1 1
+ U1 6
+Net 11 "" ""
+ P2 14
+ U1 9
+Net 12 "" ""
+ U1 10
+ P2 13
+Net 13 "" ""
+ P2 12
+ U1 11
+Net 14 "" ""
+ P2 10
+ U1 13
+Net 15 "" ""
+ U1 4
+ P1 4
+Net 16 "" ""
+ P2 9
+ U1 15
+Net 17 "" ""
+ U1 16
+ P2 8
+Net 18 "" ""
+ U1 17
+ P2 7
+Net 19 "" ""
+ U1 19
+ P2 5
+Net 20 "" ""
+ C2 2
+ U1 7
+Net 21 "" ""
+ U1 24
+ P2 2
+Net 22 "" ""
+ U1 2
+ P1 2
+Net 23 "" ""
+ U1 3
+ P1 3
+Net 24 "GND" "GND"
+ P3 1
+ P4 1
+ OC1 2
+ OC1 4
+ D1 2
+ C3 2
+ C1 2
+ U1 23
+ C4 2
+ U1 1
+ P1 1
+ U1 25
+ U1 14
+ U1 26
+ U1 8
+ C2 1
+Net 25 "" ""
+ U1 22
+ P2 3
+Net 26 "" ""
+ P2 1
+ OC1 5
+ R1 1
+}
+#End

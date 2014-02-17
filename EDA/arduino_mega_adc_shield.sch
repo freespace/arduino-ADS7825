@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 24 Jan 2014 15:35:37 GMT
+EESchema Schematic File Version 2  date Mon 17 Feb 2014 11:59:01 GMT
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -32,16 +32,14 @@ LIBS:valves
 LIBS:arduino_shieldsNCL
 LIBS:ADS7825
 LIBS:optocoupler
-LIBS:optocoupler-2
 LIBS:borniers
-LIBS:arduino_mega_adc_shield-cache
 EELAYER 25  0
 EELAYER END
 $Descr A4 11700 8267
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "24 jan 2014"
+Date "17 feb 2014"
 Rev ""
 Comp ""
 Comment1 ""
@@ -49,6 +47,10 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 1850 6200
+Connection ~ 2000 6300
+Wire Wire Line
+	2000 6200 2000 6300
 Connection ~ 5250 2300
 Wire Wire Line
 	5250 1800 5050 1800
@@ -71,11 +73,9 @@ Connection ~ 9300 3300
 Connection ~ 6450 4100
 Connection ~ 6150 4100
 Wire Wire Line
-	1850 2500 1550 2500
+	2000 2500 1550 2500
 Wire Wire Line
-	1850 2500 1850 5700
-Wire Wire Line
-	2400 6200 1850 6200
+	2000 2500 2000 5700
 Wire Wire Line
 	1150 5700 1150 5600
 Wire Wire Line
@@ -206,7 +206,7 @@ Connection ~ 6600 4100
 Wire Wire Line
 	9000 2300 9000 3200
 Wire Wire Line
-	9000 2900 9600 2900
+	9600 2900 9000 2900
 Connection ~ 9000 2900
 Connection ~ 9300 2900
 Wire Wire Line
@@ -258,6 +258,10 @@ Wire Wire Line
 	9000 3550 9100 3550
 Wire Wire Line
 	9100 3550 9100 3600
+Wire Wire Line
+	1850 6300 2400 6300
+Wire Wire Line
+	2400 6300 2400 6200
 NoConn ~ 2400 4350
 $Comp
 L GND #PWR01
@@ -283,7 +287,6 @@ NoConn ~ 4300 2600
 NoConn ~ 4300 2500
 NoConn ~ 4300 2400
 NoConn ~ 4300 2300
-NoConn ~ 1850 6300
 NoConn ~ 4300 3900
 NoConn ~ 4300 3800
 NoConn ~ 4300 3700
@@ -425,10 +428,10 @@ $EndComp
 $Comp
 L R R3
 U 1 1 52E13AE6
-P 1850 5950
-F 0 "R3" V 1930 5950 50  0000 C CNN
-F 1 "100" V 1850 5950 50  0000 C CNN
-	1    1850 5950
+P 2000 5950
+F 0 "R3" V 2080 5950 50  0000 C CNN
+F 1 "100" V 2000 5950 50  0000 C CNN
+	1    2000 5950
 	1    0    0    -1  
 $EndComp
 $Comp
