@@ -1,0 +1,9 @@
+*.o
+*.lst
+*.hex
+*.map
+*.out
+*.pyc
+*.bak
+*cache.lib
+*cache.bak
