@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
