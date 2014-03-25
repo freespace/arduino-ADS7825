@@ -112,10 +112,11 @@ class ADS7825(object):
   def __del__(self):
     del self._ser
 
-def test_read():
-  daq = ADS7825()
+def test_read(port='/dev/ttyUSB0'):
+  daq = ADS7825(port=port)
   volts = daq.read()
   assert(len(volts) == 4)
+  return volts
 
 def test_scan():
   nscans = 500
@@ -125,3 +126,6 @@ def test_scan():
 
   assert(len(volts) == 4*nscans)
 
+if __name__ == '__main__':
+  import sys
+  print test_read(sys.argv[1])
