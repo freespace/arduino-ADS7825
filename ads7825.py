@@ -35,15 +35,18 @@ class ADS7825(object):
   def _readline(self):
     return self._ser.readline()
 
-  def read(self):
+  def read(self, raw=False):
     """
     Returns a 4-tuple of floats, containing voltage measurements, in volts
     from channels 0-3 respectively. Voltage range is +/-10V
     """
     self._write('r')
     codes = map(float,map(str.strip,self._readline().split(',')))
-    volts = map(c2v, codes)
-    return volts
+    if raw:
+      return codes
+    else:
+      volts = map(c2v, codes)
+      return volts
 
   def scan(self):
     """
@@ -112,9 +115,9 @@ class ADS7825(object):
   def __del__(self):
     del self._ser
 
-def test_read(port='/dev/ttyUSB0'):
+def test_read(port='/dev/ttyUSB0', raw=False):
   daq = ADS7825(port=port)
-  volts = daq.read()
+  volts = daq.read(raw=raw)
   assert(len(volts) == 4)
   return volts
 
@@ -128,4 +131,5 @@ def test_scan():
 
 if __name__ == '__main__':
   import sys
+  print test_read(sys.argv[1], True)
   print test_read(sys.argv[1])
