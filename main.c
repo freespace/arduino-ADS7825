@@ -49,6 +49,7 @@ typedef struct {
 volatile Buffer buffer;
 
 ISR(TIMER0_COMPA_vect) {
+  PORTB = _BV(PB7);
   if (buffer.writepos < BUFFER_SIZE) {
     // doing buffer.data[buffer.writepos++] = ... is much slower than
     // doing what is done now. This makes things so slow we can't keep
@@ -78,6 +79,9 @@ int main(void) {
   adc_read_analog(0);
   
   printf("Ready\n");
+
+  DDRB = _BV(PB7);
+
 
   for (;;) {
     int c = getchar();
