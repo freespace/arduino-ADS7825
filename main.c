@@ -134,6 +134,10 @@ int main(void) {
       // since AVRs are little endian machines
       fwrite((void *)&buffer.writepos, sizeof buffer.writepos, 1, stdout);
       fwrite((void *)buffer.data, sizeof buffer.data[0], buffer.writepos, stdout);
+    } else if (c == 'c') {
+      // send the number of readings in the buffer. Each reading is from a
+      // channel, and is a 16bit integer
+      fwrite((void *)&buffer.writepos, sizeof buffer.writepos, 1, stdout);
     }
 
     // re-enable interrupts after processing serial commands
