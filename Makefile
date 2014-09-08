@@ -122,7 +122,8 @@ AVRDUDE_BAUD=57600
 # port--serial or parallel port to which your 
 # hardware programmer is attached
 #
-AVRDUDE_PORT=/dev/ttyUSB1
+# Pass this through on the commandline by using make TARGET AVRDUDE_PORT=...
+AVRDUDE_PORT="Specify serial port via AVRDUDE_PORT=..."
 
 
 ####################################################
