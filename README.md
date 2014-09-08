@@ -17,6 +17,8 @@ The program supports 3 commands:
 - `b`:  prints the contents of the buffer in binary. The byte stream will
         contain 16 bit signed integers, send LSB first. The first 16 bit
         integer is the number of 16 bit integers to follow.
+- `c`:  sends a 16 bit integer, LSB first, of how many integers are currently
+        in the buffer.
 
 Schematic
 =========
