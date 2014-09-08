@@ -27,10 +27,9 @@ void timer_init(uint8_t n) {
   // seen makes no sense.
   n = fmaxf(1, n);
 
-  // the -1 is because TCNT0 goes from top-1, top, 0, 1, ..., top-1, ...  with
-  // state changing on each trigger. Thus to have an interrupt for every other
-  // trigger (n=2), you need OCR0A=1, and TCNT0 will go 0, 1, 0, 1, 0... with
-  // an interrupt issued for everytime TCNT0 == OCR0A
+  // the -1 is because TCNT0 goes from top-1, top*, 0, 1, ..., top-1, ...  with
+  // interrupts occuring on *. Thus to have an interrupt for every
+  // other trigger (n=2), you need OCR0A=1, and TCNT0 will go 0, 1*, 0, 1*
   OCR0A = n-1;
 
   // issue an interrupt when OCR0A matches TCNT0
@@ -113,9 +112,18 @@ int main(void) {
       // end with channel 0 primed for next read
       adc_read_analog(0);
 
-      // set the counter to 0 so we don't trigger prematurely in case TCNT0
+      // set the counter to 0xFF so we don't trigger prematurely in case TCNT0
       // has left over values
-      TCNT0 = 0;
+      //
+      // XXX why 0xFF and not 0? Because the first trigger needs to set TCNT0
+      // to 0. If we want every to do a scan every other trigger, then
+      // OCR0A=1. Thus if we start with TCNT0 = 0, the first trigger that arrives
+      // will increment TCNT0 to 1, which is a match, and we immediately get
+      // an interrupt. On the next trigger TCNT0 = 0, then after that TCNT0=1,
+      // and another interrupt happens.
+      TCNT0 = 0xFF;
+
+      PORTB = 0;
 
     } else if (c == 'p') {
       int idx;
