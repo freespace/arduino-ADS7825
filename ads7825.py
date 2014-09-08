@@ -50,14 +50,20 @@ class ADS7825(object):
 
   def scan(self):
     """
-    Asks the firmware to beginning scanning the 4 channels on external trigge.
+    Asks the firmware to beginning scanning the 4 channels on external trigger.
+
+    Note that scans do NOT block serial communication, so read_scan will return
+    the number of scans currently available.
     """
     self._write('s')
 
-  def read_scan(self, nscans, binary=True):
+  def read_scan(self, nscans, binary=True, nchannels=4):
     """
     Gets from the firmware the scans it buffered from scan(). You must
-    supply the number of scans to retrieve.
+    supply the number of scans (nscans) to retrieve. Each scan consists
+    of nchannels number of 16 bit ints.
+
+    nchannels: the number of channels scanned per scan
 
     If binary is set to True, then 'b' is used to retrieve the buffer instead
     of 'p'. Defaults to True.
@@ -66,10 +72,23 @@ class ADS7825(object):
 
       [v0_0, v1_0, v2_0, v3_0, v0_1, v1_1, v2_1, v3_1 ...
         v0_n-1, v1_n-1, v2_n-1, v3_-1]
+
+
+    If called before nscans have been required, you will get an exception.
+    Just wait a bit longer, and check also that nscans does not exceed the
+    buffer allocated in the firmware. e.g. if buffer can only hold 10 scans,
+    and you want 20, then this method will ALWAYS throw an exception.
+
+    You should NOT call this during data acquisition because if the processor
+    is forced to handle communication then it will miss triggers because to
+    preserve data integrity interrupts are disabled when processing commands.
     """
+    nscans = int(nscans)
+    nchannels = int(nchannels)
+
     if binary:
       self._ser.flushInput()
-      self._write('b')
+      self._write('c')
       def read16i():
         b = self._ser.read(2)
         import struct
@@ -77,15 +96,20 @@ class ADS7825(object):
 
       nints = read16i()
 
-      if nints < nscans*4:
-          raise Exception("Premature end of buffer. ADC probably couldn't keep up. Codes available: %d"%(nints))
+      if nints < nscans*nchannels:
+        raise Exception("Premature end of buffer. ADC probably couldn't keep up. Codes available: %d need %d"%(nints, nscans*nchannels))
+
+      # ask for binary print out of the buffer, and the buffer might have
+      # updated we get the up to date count of ints to expect
+      self._write('b')
+      nints = read16i()
 
       codes = list()
       while nints:
         codes.append(read16i())
         nints -= 1
 
-      return map(c2v, codes)[:nscans*4]
+      return map(c2v, codes)[:nscans*nchannels]
     else:
       self._write('p')
 
