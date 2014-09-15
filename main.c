@@ -7,8 +7,8 @@
 
 #include "uart.h"
 #include "errors.h"
-
 #include "ads7825.h"
+#include "digital_out.h"
 
 void timer_init(uint8_t n) {
   // setup counter0 issue an interrupt for every n external trigger seen.
@@ -116,7 +116,7 @@ int main(void) {
 
   DDRB = _BV(PB7);
 
-  int c;
+  int c, a, r;
   for (;;) {
     c = getchar();
 
@@ -148,7 +148,7 @@ int main(void) {
       // CHANNELS_AVAILABLE, and '?' is outputted
       c = getchar();
       nchannels = c - '0';
-      if (nchannels > CHANNELS_AVAILABLE || nchannels == 0) {
+      if (nchannels > CHANNELS_AVAILABLE || nchannels <= 0) {
         nchannels = CHANNELS_AVAILABLE;
         _err(CHANNEL_OUT_OF_RANGE_ERROR);
       } else {
@@ -194,6 +194,15 @@ int main(void) {
       // send the number of readings in the buffer. Each reading is from a
       // channel, and is a 16bit integer
       fwrite((void *)&buffer.writepos, sizeof buffer.writepos, 1, stdout);
+    } else if (c == 'o' || c == 'f') {
+      // this turns on/off a pin, another byte is expected which specified the
+      // pin to turn on. Exactly which pin is turned on depends on
+      // digital_out.
+      a = getchar();
+      a = a - '0';
+      r = digital_out_write(a, c == 'o');
+      if (r == NO_ERROR) _ack();
+      else _err(r);
     } else _err(UNKNOWN_COMMAND_ERROR);
 
     // re-enable interrupts after processing serial commands
