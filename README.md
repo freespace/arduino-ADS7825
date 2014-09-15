@@ -21,6 +21,10 @@ The program supports the following commands:
         integer is the number of 16 bit integers to follow.
 - `c`:  sends a 16 bit integer, LSB first, of how many integers are currently
         in the buffer.
+- `oN`:
+- `fN`: turns on/off pin N. Which physical pin this corresponds to depends
+        entirely on `digital_out`. Currently it maps to digital pins 49..47
+        for values 0..7, which is port L on the ATMega1280.
 
 Commands that do not result in immediate output, such as `s` will output either
 `OK` or `ERRx` to indicate success or error, followed by `\n`. `x` is an error
