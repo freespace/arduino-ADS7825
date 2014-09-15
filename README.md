@@ -36,4 +36,11 @@ Two version of this board exists. One as an Arduino Mega shield, the other as a 
 Notes
 =====
 
-This program is written as a quick hack to replace a broken 16bit ADC in an existing instrument, and thus *is a little crap*. The EDA for this project is based on the breadboard version that I had constructed, and as of 3rd of Feb 2014 is untested.
+This program is written as a quick hack to replace a broken 16bit ADC in an
+existing instrument, and thus *is a little crap*. The EDA for this project is
+based on the breadboard version that I had constructed, and as of 3rd of Feb
+2014 is untested.
+
+## Update
+2014.09.15: The EDA board has been constructed and has been found to work.
+
