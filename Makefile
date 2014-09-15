@@ -84,7 +84,7 @@ PROJECTNAME=firmware
 # (list all files to compile, e.g. 'a.c b.cpp as.S'):
 # Use .cc, .cpp or .C suffix for C++ files, use .S 
 # (NOT .s !!!) for assembly source code files.
-PRJSRC=main.c uart.c ads7825.c
+PRJSRC=main.c uart.c ads7825.c digital_out.c
 
 # additional includes (e.g. -I/path/to/mydir)
 #INC=-I/path/to/include
