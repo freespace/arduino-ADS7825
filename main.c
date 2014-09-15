@@ -6,11 +6,9 @@
 #include <avr/interrupt.h>
 
 #include "uart.h"
+#include "errors.h"
 
 #include "ads7825.h"
-
-// Make room for 512 scans of each of 4 channels
-#define BUFFER_SIZE               (512 * 4)
 
 void timer_init(uint8_t n) {
   // setup counter0 issue an interrupt for every n external trigger seen.
@@ -40,6 +38,11 @@ void timer_init(uint8_t n) {
   sei();
 }
 
+#define CHANNELS_AVAILABLE    (4)
+uint8_t nchannels = CHANNELS_AVAILABLE;
+
+// Make room for 512 scans of each of 4 channels
+#define BUFFER_SIZE               (512 * 4)
 
 typedef struct {
   int16_t data[BUFFER_SIZE];
@@ -50,7 +53,7 @@ volatile Buffer buffer;
 
 ISR(TIMER0_COMPA_vect) {
   PORTB = _BV(PB7);
-  if (buffer.writepos < BUFFER_SIZE) {
+  if (buffer.writepos+nchannels-1 < BUFFER_SIZE) {
     // doing buffer.data[buffer.writepos++] = ... is much slower than
     // doing what is done now. This makes things so slow we can't keep
     // up with what is a relatively slow external clock! This is much faster.
@@ -62,29 +65,60 @@ ISR(TIMER0_COMPA_vect) {
     // Note that the arduino implementation uses x++ pattern, and may be the
     // cause of its slowness, and why I needed an external frequency divider
     // to get it to work reliably.
-    buffer.data[buffer.writepos+0] = adc_read_analog(1);
-    buffer.data[buffer.writepos+1] = adc_read_analog(2);
-    buffer.data[buffer.writepos+2] = adc_read_analog(3);
-    buffer.data[buffer.writepos+3] = adc_read_analog(0);
-    buffer.writepos+=4;
+    switch(nchannels) {
+      case 1:
+        buffer.data[buffer.writepos+0] = adc_read_analog(0);
+        break;
+
+      case 2:
+        buffer.data[buffer.writepos+0] = adc_read_analog(1);
+        buffer.data[buffer.writepos+1] = adc_read_analog(0);
+        break;
+
+      case 3:
+        buffer.data[buffer.writepos+0] = adc_read_analog(1);
+        buffer.data[buffer.writepos+1] = adc_read_analog(2);
+        buffer.data[buffer.writepos+2] = adc_read_analog(0);
+        break;
+
+      case 4:
+        buffer.data[buffer.writepos+0] = adc_read_analog(1);
+        buffer.data[buffer.writepos+1] = adc_read_analog(2);
+        buffer.data[buffer.writepos+2] = adc_read_analog(3);
+        buffer.data[buffer.writepos+3] = adc_read_analog(0);
+        break;
+    }
+
+    buffer.writepos += nchannels;
   }
+}
+
+// acknowledge the last command if the command does not immediately
+// yield output, e.g. s, C
+void _ack(void) {
+  printf("OK\n");
+}
+
+// signals that the last command encountered an error. 
+void _err(uint8_t code) {
+  printf("ERR%d\n", code);
 }
 
 int main(void) {
   uart_init();
   adc_init();
-  timer_init(10);
+  timer_init(1);
 
   // prime the next channel to be read as channel 0
   adc_read_analog(0);
   
-  printf("Ready\n");
+  printf("READY\n");
 
   DDRB = _BV(PB7);
 
-
+  int c;
   for (;;) {
-    int c = getchar();
+    c = getchar();
 
     // disable interrupts because we don't want the buffer being written
     // to for 'p' or 'b', nor writepos being updated
@@ -109,35 +143,45 @@ int main(void) {
           chan2,
           chan3);
     } else if (c == 's') {
-      // reset to start of the buffer
-      buffer.writepos = 0;
+      // a byte is expected after this command that has value 1..4 in ASCII.
+      // If the value is invalid, channels to read is set to
+      // CHANNELS_AVAILABLE, and '?' is outputted
+      c = getchar();
+      nchannels = c - '0';
+      if (nchannels > CHANNELS_AVAILABLE || nchannels == 0) {
+        nchannels = CHANNELS_AVAILABLE;
+        _err(CHANNEL_OUT_OF_RANGE_ERROR);
+      } else {
+        // reset to start of the buffer
+        buffer.writepos = 0;
 
-      // prime channel 0 for read, just in case, even though we should always
-      // end with channel 0 primed for next read
-      adc_read_analog(0);
+        // prime channel 0 for read, just in case, even though we should always
+        // end with channel 0 primed for next read
+        adc_read_analog(0);
 
-      // set the counter to 0xFF so we don't trigger prematurely in case TCNT0
-      // has left over values
-      //
-      // XXX why 0xFF and not 0? Because the first trigger needs to set TCNT0
-      // to 0. If we want every to do a scan every other trigger, then
-      // OCR0A=1. Thus if we start with TCNT0 = 0, the first trigger that arrives
-      // will increment TCNT0 to 1, which is a match, and we immediately get
-      // an interrupt. On the next trigger TCNT0 = 0, then after that TCNT0=1,
-      // and another interrupt happens.
-      TCNT0 = 0xFF;
+        // set the counter to 0xFF so we don't trigger prematurely in case TCNT0
+        // has left over values
+        //
+        // XXX why 0xFF and not 0? Because the first trigger needs to set TCNT0
+        // to 0. If we want every to do a scan every other trigger, then
+        // OCR0A=1. Thus if we start with TCNT0 = 0, the first trigger that arrives
+        // will increment TCNT0 to 1, which is a match, and we immediately get
+        // an interrupt. On the next trigger TCNT0 = 0, then after that TCNT0=1,
+        // and another interrupt happens.
+        TCNT0 = 0xFF;
 
-      PORTB = 0;
-
+        PORTB = 0;
+        
+        _ack();
+      }
     } else if (c == 'p') {
-      int idx;
-      for (idx = 0; idx < buffer.writepos; idx += 4) {
-      printf("%d %d %d %d %d\n",
-          idx/4,
-          buffer.data[idx+0],
-          buffer.data[idx+1],
-          buffer.data[idx+2],
-          buffer.data[idx+3]);
+      int idx, ch;
+      for (idx = 0; idx+nchannels < buffer.writepos && idx+nchannels-1 < BUFFER_SIZE; idx += nchannels) {
+        printf("%d ", idx/nchannels);
+        for (ch = 0; ch < nchannels; ++ch) {
+          printf("%d ", buffer.data[idx+ch]);
+        }
+        printf("\n");
       }
       printf("END\n");
     } else if (c == 'b') {
@@ -150,7 +194,7 @@ int main(void) {
       // send the number of readings in the buffer. Each reading is from a
       // channel, and is a 16bit integer
       fwrite((void *)&buffer.writepos, sizeof buffer.writepos, 1, stdout);
-    }
+    } else _err(UNKNOWN_COMMAND_ERROR);
 
     // re-enable interrupts after processing serial commands
     sei();
