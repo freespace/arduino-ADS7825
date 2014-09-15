@@ -6,10 +6,12 @@ Simple arduino program to interface with an ADS7825, a 4 channel 16bit ADC from 
 Communication
 =============
 
-The program supports 3 commands:
+When firmware is ready to accept commands, it will output `READY\n`.
+
+The program supports the following commands:
 
 - `r`:  reads the 4 channels, printing the results as ASCII to serial immediately.
-- `s:`: starts a continuous scan of all 4 channels whenever an external trigger
+- `sN:`: starts a continuous scan of N channels whenever an external trigger
         is received, possibly after some frequency division. Data is stored
         sequentially into an internal buffer. Scan stops when buffer is full.
 - `p`:  prints the contents of the buffer in ASCII, up to the last write
@@ -19,6 +21,10 @@ The program supports 3 commands:
         integer is the number of 16 bit integers to follow.
 - `c`:  sends a 16 bit integer, LSB first, of how many integers are currently
         in the buffer.
+
+Commands that do not result in immediate output, such as `s` will output either
+`OK` or `ERRx` to indicate success or error, followed by `\n`. `x` is an error
+code that will specify the error that occured.
 
 Schematic
 =========
