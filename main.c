@@ -146,8 +146,8 @@ int main(void) {
       // a byte is expected after this command that has value 1..4 in ASCII.
       // If the value is invalid, channels to read is set to
       // CHANNELS_AVAILABLE, and '?' is outputted
-      c = getchar();
-      nchannels = c - '0';
+      a = getchar();
+      nchannels = a - '0';
       if (nchannels > CHANNELS_AVAILABLE || nchannels <= 0) {
         nchannels = CHANNELS_AVAILABLE;
         _err(CHANNEL_OUT_OF_RANGE_ERROR);
@@ -176,7 +176,10 @@ int main(void) {
       }
     } else if (c == 'p') {
       int idx, ch;
-      for (idx = 0; idx+nchannels < buffer.writepos && idx+nchannels-1 < BUFFER_SIZE; idx += nchannels) {
+      // writepos should never be greater than BUFFER_SIZE, but lets make sure
+      if (buffer.writepos > BUFFER_SIZE) buffer.writepos = BUFFER_SIZE;
+
+      for (idx = 0; idx+nchannels-1 < buffer.writepos; idx += nchannels) {
         printf("%d ", idx/nchannels);
         for (ch = 0; ch < nchannels; ++ch) {
           printf("%d ", buffer.data[idx+ch]);
