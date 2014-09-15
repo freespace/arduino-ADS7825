@@ -1,10 +1,8 @@
-arduino-ADS7825
-===============
+# arduino-ADS7825
 
 Simple arduino program to interface with an ADS7825, a 4 channel 16bit ADC from TI.
 
-Communication
-=============
+# Communication
 
 When firmware is ready to accept commands, it will output `READY\n`.
 
@@ -28,23 +26,20 @@ The program supports the following commands:
 
 Commands that do not result in immediate output, such as `s` will output either
 `OK` or `ERRx` to indicate success or error, followed by `\n`. `x` is an error
-code that will specify the error that occured.
+code that will specify the error that occured. See `errors.h` for list of error codes.
 
-Schematic
-=========
+# Schematic
 
 Two version of this board exists. One as an Arduino Mega shield, the other as a standalone board. The arduino shield schematic is shown below.
 
 ![Arduino Mega shield schematic](https://raw.github.com/freespace/arduino-ADS7825/master/EDA/arduino_mega_adc_shield.gif)
 
-Notes
-=====
+# Notes
 
 This program is written as a quick hack to replace a broken 16bit ADC in an
 existing instrument, and thus *is a little crap*. The EDA for this project is
 based on the breadboard version that I had constructed, and as of 3rd of Feb
 2014 is untested.
 
-## Update
+### Update
 2014.09.15: The EDA board has been constructed and has been found to work.
-
