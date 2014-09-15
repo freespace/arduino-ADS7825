@@ -1,0 +1,8 @@
+#ifndef ERROR_H
+#define ERROR_H
+
+enum {
+  CHANNEL_OUT_OF_RANGE_ERROR,
+  UNKNOWN_COMMAND_ERROR,
+};
+#endif
