@@ -24,15 +24,16 @@ int adc_init(void) {
   Reads in the current conversion value, and sets the next channel to be
   sampled.
 
+  It is recommended that, if this code is called outside of an IRS, for it to
+  be surrounded by cli() and sei() to avoid interrupts occuring during
+  execution of the function.
+
   Returned value is 2s complemented 16 bit integer.
   */
 int16_t adc_read_analog(uint8_t next_chan) {
   next_chan&0x1?SET(CONTROL_PORT, A0):CLEAR(CONTROL_PORT, A0);
   next_chan&0x2?SET(CONTROL_PORT, A1):CLEAR(CONTROL_PORT, A1);
 
-  // we really don't need any interrupts messing the timings in here up
-  cli();
-  
   // begin a conversion by pull RC low
   CLEAR(CONTROL_PORT, RC);
   
@@ -43,8 +44,6 @@ int16_t adc_read_analog(uint8_t next_chan) {
 
   // now make RC high
   SET(CONTROL_PORT, RC);
-
-  sei();
 
   // wait for busy to go high
   loop_until_bit_is_set(CONTROL_PORT_PIN, BUSY);
