@@ -24,16 +24,24 @@ class ADS7825(object):
 
     # do a dummy read to flush the serial pipline. This is required because
     # the arduino reboots up on being connected, and emits a 'Ready' string
-    self._write('r')
-    self._readline()
+    for c in  self._readline():
+      print c, hex(ord(c))
 
-  def _write(self, x):
+  def _write(self, x, expectOK=False):
     # print 'sent',x
     self._ser.write(x)
     self._ser.flush()
 
+    if expectOK:
+      assert self._readline() == 'OK'
+
   def _readline(self):
-    return self._ser.readline()
+    return self._ser.readline().strip()
+
+  def _read16i(self):
+    b = self._ser.read(2)
+    import struct
+    return struct.unpack('<h', b)[0]
 
   def read(self, raw=False):
     """
@@ -48,14 +56,38 @@ class ADS7825(object):
       volts = map(c2v, codes)
       return volts
 
-  def scan(self):
+  def scan(self, nchannels=4):
     """
     Asks the firmware to beginning scanning the 4 channels on external trigger.
 
     Note that scans do NOT block serial communication, so read_scan will return
     the number of scans currently available.
     """
-    self._write('s')
+    self._write('s'+str(nchannels), expectOK=True)
+
+  def buffer_writepos(self):
+    """
+    Returns the write position in the buffer, which is an indirect measure of the number
+    of scans, with the write position incremeneting by nchannels for every scan triggered.
+    """
+    self._write('c')
+    return self._read16i()
+
+
+  def output_on(self, output):
+    """
+    Turns the specified output
+    """
+    assert output >= 0 and output < 10, 'Output out of range'
+    self._write('o'+str(output), expectOK=True)
+
+
+  def output_off(self, output):
+    """
+    Turns off the specified output
+    """
+    assert output >= 0 and output < 10, 'Output out of range'
+    self._write('f'+str(output), expectOK=True)
 
   def read_scan(self, nscans, binary=True, nchannels=4):
     """
@@ -86,15 +118,10 @@ class ADS7825(object):
     nscans = int(nscans)
     nchannels = int(nchannels)
 
-    if binary:
-      self._ser.flushInput()
-      self._write('c')
-      def read16i():
-        b = self._ser.read(2)
-        import struct
-        return struct.unpack('<h', b)[0]
+    self._ser.flushInput()
 
-      nints = read16i()
+    if binary:
+      nints = self.buffer_writepos()
 
       if nints < nscans*nchannels:
         raise Exception("Premature end of buffer. ADC probably couldn't keep up. Codes available: %d need %d"%(nints, nscans*nchannels))
@@ -102,11 +129,11 @@ class ADS7825(object):
       # ask for binary print out of the buffer, and the buffer might have
       # updated we get the up to date count of ints to expect
       self._write('b')
-      nints = read16i()
+      nints = self._read16i()
 
       codes = list()
       while nints:
-        codes.append(read16i())
+        codes.append(self._read16i())
         nints -= 1
 
       return map(c2v, codes)[:nscans*nchannels]
@@ -116,7 +143,7 @@ class ADS7825(object):
       volts = list()
       done = False
       while not done:
-        line = self._readline().strip()
+        line = self._readline()
         if line == 'END':
           raise Exception("Premature end of buffer. ADC probably couldn't keep up. Lines read: %d"%(len(volts)//4))
 
@@ -130,9 +157,8 @@ class ADS7825(object):
           done = True
 
       # read to the end of the buffer
-      line = ''
-      while line != 'END':
-        line = self._readline().strip()
+      while self._readline() != 'END':
+        pass
 
       return volts
 
