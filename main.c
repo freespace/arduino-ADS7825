@@ -10,16 +10,7 @@
 #include "ads7825.h"
 #include "digital_out.h"
 
-void timer_init(uint8_t n) {
-  // setup counter0 issue an interrupt for every n external trigger seen.
-
-  // OC0A and OC0B disconnected
-  // CTC waveform generation mode, clearing the timer on match
-  TCCR0A = 0x00 | _BV(WGM01);
-
-  // Set T0 as external clock, clock on falling edge
-  TCCR0B = 0x00 | _BV(CS02) | _BV(CS01);
-
+void trigger_set(uint8_t n) {
   // set the value at which we roll over, using OCR0A. We enforce the
   // condition that n is >=1 because triggering for every 0 external trigger
   // seen makes no sense.
@@ -30,10 +21,24 @@ void timer_init(uint8_t n) {
   // other trigger (n=2), you need OCR0A=1, and TCNT0 will go 0, 1*, 0, 1*
   OCR0A = n-1;
 
+  TCNT0 = 0;
+}
+
+void timer_init(uint8_t n) {
+  // setup counter0 issue an interrupt for every n external trigger seen.
+
+  // OC0A and OC0B disconnected
+  // CTC waveform generation mode, clearing the timer on match
+  TCCR0A = 0x00 | _BV(WGM01);
+
+  // Set T0 as external clock, clock on falling edge
+  TCCR0B = 0x00 | _BV(CS02) | _BV(CS01);
+
   // issue an interrupt when OCR0A matches TCNT0
   TIMSK0 = 0x00 | _BV(OCIE0A);
 
-  TCNT0 = 0;
+  // by default trigger on every trigger
+  trigger_set(1);
 
   sei();
 }
@@ -206,6 +211,14 @@ int main(void) {
       r = digital_out_write(a, c == 'o');
       if (r == NO_ERROR) _ack();
       else _err(r);
+    } else if (c == 't') {
+      a = getchar();
+      a = a - '0';
+      if ( a < 0 || a > 9) _err(ARGUMENT_OUT_OF_RANGE_ERROR);
+      else {
+        trigger_set(a);
+        _ack();
+      }
     } else _err(UNKNOWN_COMMAND_ERROR);
 
     // re-enable interrupts after processing serial commands
