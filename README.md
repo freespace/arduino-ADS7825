@@ -24,9 +24,20 @@ The program supports the following commands:
         entirely on `digital_out`. Currently it maps to digital pins 49..47
         for values 0..7, which is port L on the ATMega1280.
 
+- `tN`: sets the trigger divider. For example, if N=1, then every trigger will
+        result in a scan. If N=2, every OTHER trigger will result in a scan.
+
 Commands that do not result in immediate output, such as `s` will output either
 `OK` or `ERRx` to indicate success or error, followed by `\n`. `x` is an error
 code that will specify the error that occured. See `errors.h` for list of error codes.
+
+## Interrupts
+
+For all commands other than `o` and `f`, interrupts are disabled when the first
+character, and remains disabled until the commands has been processed.
+
+Having interrupts enabled during `o` and `f` allows self testing of trigger and scan
+functionality.
 
 # Schematic
 
