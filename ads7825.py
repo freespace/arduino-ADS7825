@@ -253,7 +253,7 @@ class Test():
     ntriggers = 200
 
     for nchannels in (1,2,3,4):
-      for trigger_div in (1,2,5):
+      for trigger_div in (1,2,3,5):
         self.adc.set_trigger_divider(trigger_div)
         self.adc.scan(nchannels)
 
@@ -268,7 +268,7 @@ class Test():
 
         writepos = self.adc.buffer_writepos
         print 'write pos at %d after %d scans of %d channels'%(writepos, ntriggers/trigger_div, nchannels)
-        assert writepos == ntriggers/trigger_div * nchannels
+        assert writepos == ntriggers//trigger_div * nchannels
 
 if __name__ == '__main__':
   import nose
