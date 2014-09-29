@@ -9,31 +9,58 @@ Note that in my testing, the ADS7825 is very accurate up to 10V, to the
 point where there is little point, in my opinion, to write calibration
 code. The codes produce voltages that are within 0.01V of the value set
 using a HP lab PSU.
+
+TODO:
+  - Implement self test using don/doff commands. Use read function to
+    determine if don/doff is working
+  - Use either PWM driver or another chip to generate a clock signal
+    and determine the maximum sampling rate of the system
+    - It will be limited by how fast we can service interrupts, which
+      in turn will be limited by how fast the firmware is capable of
+      reading from the ADC
 """
 
+from __future__ import division
 import serial
 import time
 
 def c2v(c):
   return float(c)/(0x7FFF)*10
 
+
+def find_arduino_port():
+  from serial.tools import list_ports
+  comports = list_ports.comports()
+  for path, name, vidpid in comports:
+    if 'FT232' in name:
+      return path
+
+  if len(comports):
+    return comports[0][0]
+  else:
+    return None
+
+
 class ADS7825(object):
-  def __init__(self, port='/dev/ttyUSB0'):
+  def __init__(self, port=find_arduino_port(), verbose=False):
     super(ADS7825, self).__init__()
+    self._verbose = verbose
     self._ser = serial.Serial(port, baudrate=57600)
 
     # do a dummy read to flush the serial pipline. This is required because
     # the arduino reboots up on being connected, and emits a 'Ready' string
-    for c in  self._readline():
-      print c, hex(ord(c))
+    assert self._readline() == 'READY'
 
   def _write(self, x, expectOK=False):
-    # print 'sent',x
     self._ser.write(x)
     self._ser.flush()
 
+    if self._verbose:
+      print '>',x
+
     if expectOK:
-      assert self._readline() == 'OK'
+      l = self._readline()
+      assert l == 'OK', 'Expected OK got: '+l
 
   def _readline(self):
     return self._ser.readline().strip()
@@ -49,7 +76,9 @@ class ADS7825(object):
     from channels 0-3 respectively. Voltage range is +/-10V
     """
     self._write('r')
-    codes = map(float,map(str.strip,self._readline().split(',')))
+    line = self._readline()
+    codes = map(float,map(str.strip,line.split(',')))
+
     if raw:
       return codes
     else:
@@ -60,11 +89,12 @@ class ADS7825(object):
     """
     Asks the firmware to beginning scanning the 4 channels on external trigger.
 
-    Note that scans do NOT block serial communication, so read_scan will return
+    Note that scans do NOT block serial communication, so read_scans will return
     the number of scans currently available.
     """
     self._write('s'+str(nchannels), expectOK=True)
 
+  @property
   def buffer_writepos(self):
     """
     Returns the write position in the buffer, which is an indirect measure of the number
@@ -89,7 +119,16 @@ class ADS7825(object):
     assert output >= 0 and output < 10, 'Output out of range'
     self._write('f'+str(output), expectOK=True)
 
-  def read_scan(self, nscans, binary=True, nchannels=4):
+  def set_trigger_divider(self, n):
+    """
+    Divides the incoming trigger signal by n, triggering every nth trigger.
+
+    Valid range is 1..9 currently.
+    """
+    assert n > 0 and n < 10
+    self._write('t'+str(n), expectOK=True)
+
+  def read_scans(self, nscans, binary=True, nchannels=4):
     """
     Gets from the firmware the scans it buffered from scan(). You must
     supply the number of scans (nscans) to retrieve. Each scan consists
@@ -121,7 +160,7 @@ class ADS7825(object):
     self._ser.flushInput()
 
     if binary:
-      nints = self.buffer_writepos()
+      nints = self.buffer_writepos
 
       if nints < nscans*nchannels:
         raise Exception("Premature end of buffer. ADC probably couldn't keep up. Codes available: %d need %d"%(nints, nscans*nchannels))
@@ -165,21 +204,72 @@ class ADS7825(object):
   def __del__(self):
     del self._ser
 
-def test_read(port='/dev/ttyUSB0', raw=False):
-  daq = ADS7825(port=port)
-  volts = daq.read(raw=raw)
-  assert(len(volts) == 4)
-  return volts
+class Test():
+  @classmethod
+  def setup_all(self):
+    ardport = find_arduino_port()
+    import readline
+    userport = raw_input('Serial port [%s]: '%(ardport))
+    if len(userport) == 0:
+      userport = ardport
 
-def test_scan():
-  nscans = 500
-  daq = ADS7825()
-  daq.scan(nscans)
-  volts = daq.read_scan(nscans)
+    self.adc = ADS7825(ardport, verbose=False)
 
-  assert(len(volts) == 4*nscans)
+  def _banner(self, text):
+    l = len(text)
+    print 
+    print text
+    print '-'*l
+
+  def test_read(self):
+    volts = self.adc.read()
+    print 'Volts: ', volts
+    assert len(volts) == 4
+
+  def test_outputs(self):
+    self._banner('Digital Output Test')
+    for pin in xrange(8):
+      for ch in xrange(4):
+        e = raw_input('Connect D%d to channel %d, Enter E end. '%((49-pin), ch+1))
+        if e == 'E':
+          return
+        self.adc.output_off(pin)
+        voltsoff = self.adc.read()
+
+        self.adc.output_on(pin)
+        voltson = self.adc.read()
+
+        print 'on=',voltson[ch], 'off=',voltsoff[ch]
+
+        assert voltson[ch] > voltsoff[ch]
+
+  def test_trigger(self):
+    self._banner('Trigger Test')
+    period_ms = 2
+    halfperiod_s = period_ms*0.5/1000
+
+    raw_input('Connect D49 to D38 and press [ENTER]')
+
+    ntriggers = 200
+
+    for nchannels in (1,2,3,4):
+      for trigger_div in (1,2,5):
+        self.adc.set_trigger_divider(trigger_div)
+        self.adc.scan(nchannels)
+
+        assert self.adc.buffer_writepos == 0
+
+        for x in xrange(ntriggers):
+          self.adc.output_on(0)
+          time.sleep(halfperiod_s)
+          self.adc.output_off(0)
+          time.sleep(halfperiod_s)
+          #print self.adc.buffer_writepos, x+1
+
+        writepos = self.adc.buffer_writepos
+        print 'write pos at %d after %d scans of %d channels'%(writepos, ntriggers/trigger_div, nchannels)
+        assert writepos == ntriggers/trigger_div * nchannels
 
 if __name__ == '__main__':
-  import sys
-  print test_read(sys.argv[1], True)
-  print test_read(sys.argv[1])
+  import nose
+  nose.main()
