@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <math.h>
 
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
@@ -9,39 +8,8 @@
 #include "errors.h"
 #include "ads7825.h"
 #include "digital_out.h"
+#include "trigger.h"
 
-void trigger_set(uint8_t n) {
-  // set the value at which we roll over, using OCR0A. We enforce the
-  // condition that n is >=1 because triggering for every 0 external trigger
-  // seen makes no sense.
-  n = fmaxf(1, n);
-
-  // the -1 is because TCNT0 goes from top-1, top*, 0, 1, ..., top-1, ...  with
-  // interrupts occuring on *. Thus to have an interrupt for every
-  // other trigger (n=2), you need OCR0A=1, and TCNT0 will go 0, 1*, 0, 1*
-  OCR0A = n-1;
-
-  TCNT0 = 0;
-}
-
-void timer_init(uint8_t n) {
-  // setup counter0 issue an interrupt for every n external trigger seen.
-
-  // OC0A and OC0B disconnected
-  // CTC waveform generation mode, clearing the timer on match
-  TCCR0A = 0x00 | _BV(WGM01);
-
-  // Set T0 as external clock, clock on falling edge
-  TCCR0B = 0x00 | _BV(CS02) | _BV(CS01);
-
-  // issue an interrupt when OCR0A matches TCNT0
-  TIMSK0 = 0x00 | _BV(OCIE0A);
-
-  // by default trigger on every trigger
-  trigger_set(1);
-
-  sei();
-}
 
 #define CHANNELS_AVAILABLE    (4)
 uint8_t nchannels = CHANNELS_AVAILABLE;
@@ -56,7 +24,7 @@ typedef struct {
 
 volatile Buffer buffer;
 
-ISR(TIMER0_COMPA_vect) {
+ISR(TIMER0_OVF_vect) {
   PORTB = _BV(PB7);
   if (buffer.writepos+nchannels-1 < BUFFER_SIZE) {
     // doing buffer.data[buffer.writepos++] = ... is much slower than
@@ -96,6 +64,7 @@ ISR(TIMER0_COMPA_vect) {
 
     buffer.writepos += nchannels;
   }
+
 }
 
 // acknowledge the last command if the command does not immediately
@@ -104,7 +73,7 @@ void _ack(void) {
   printf("OK\n");
 }
 
-// signals that the last command encountered an error. 
+// signals that the last command encountered an error.
 void _err(uint8_t code) {
   printf("ERR%d\n", code);
 }
@@ -112,22 +81,31 @@ void _err(uint8_t code) {
 int main(void) {
   uart_init();
   adc_init();
-  timer_init(1);
+  digital_out_init();
+  trigger_init();
 
   // prime the next channel to be read as channel 0
   adc_read_analog(0);
-  
+
   printf("READY\n");
 
   DDRB = _BV(PB7);
 
   int c, a, r;
   for (;;) {
+    // enable interrupts while waiting for serial
+    sei();
+
     c = getchar();
 
-    // disable interrupts because we don't want the buffer being written
-    // to for 'p' or 'b', nor writepos being updated
-    cli();
+    // interrupts are enabled only for o and f for ease of debugging
+    switch(c) {
+      case 'o':
+      case 'f':
+        break;
+      default:
+        cli();
+    }
 
     if (c == 'r') {
       // prime channel 0 for read, just in case, even though we should always
@@ -149,37 +127,29 @@ int main(void) {
           chan3);
     } else if (c == 's') {
       // a byte is expected after this command that has value 1..4 in ASCII.
-      // If the value is invalid, channels to read is set to
-      // CHANNELS_AVAILABLE, and '?' is outputted
       a = getchar();
       nchannels = a - '0';
       if (nchannels > CHANNELS_AVAILABLE || nchannels <= 0) {
         nchannels = CHANNELS_AVAILABLE;
         _err(CHANNEL_OUT_OF_RANGE_ERROR);
       } else {
-        // reset to start of the buffer
-        buffer.writepos = 0;
-
         // prime channel 0 for read, just in case, even though we should always
         // end with channel 0 primed for next read
         adc_read_analog(0);
 
-        // set the counter to 0xFF so we don't trigger prematurely in case TCNT0
-        // has left over values
-        //
-        // XXX why 0xFF and not 0? Because the first trigger needs to set TCNT0
-        // to 0. If we want every to do a scan every other trigger, then
-        // OCR0A=1. Thus if we start with TCNT0 = 0, the first trigger that arrives
-        // will increment TCNT0 to 1, which is a match, and we immediately get
-        // an interrupt. On the next trigger TCNT0 = 0, then after that TCNT0=1,
-        // and another interrupt happens.
-        TCNT0 = 0xFF;
+        // reset to start of the buffer
+        buffer.writepos = 0;
 
+        // reset the trigger
+        trigger_reset();
+
+        // this provides feedback of when we have started triggering
         PORTB = 0;
-        
+
         _ack();
       }
     } else if (c == 'p') {
+      //printf("TCNT0=%d OCR0A=%d\n", TCNT0, OCR0A);
       int idx, ch;
       // writepos should never be greater than BUFFER_SIZE, but lets make sure
       if (buffer.writepos > BUFFER_SIZE) buffer.writepos = BUFFER_SIZE;
@@ -214,15 +184,12 @@ int main(void) {
     } else if (c == 't') {
       a = getchar();
       a = a - '0';
-      if ( a < 0 || a > 9) _err(ARGUMENT_OUT_OF_RANGE_ERROR);
+      if (a < 1 || a > 9) _err(ARGUMENT_OUT_OF_RANGE_ERROR);
       else {
         trigger_set(a);
         _ack();
       }
     } else _err(UNKNOWN_COMMAND_ERROR);
-
-    // re-enable interrupts after processing serial commands
-    sei();
   }
 
   return 0;
