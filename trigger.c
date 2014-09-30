@@ -20,19 +20,22 @@ void trigger_set(uint8_t n) {
   // Where * indicates interrupt.
   n = n - 1;
 
+  // it is not sufficient to just update OCR0A due to double buffering feature
+  // of counter 0. In some waveform generation modes (WGM), OCR0A is not
+  // updated immediately, resulting in early or late triggers. This is
+  // resolved by setting TCCR0A and TCCR0B to 0, which forces WGM mode 0 in
+  // which OCR0A update occurs immediately. After OCR0A is updated TCCR0A and
+  // TCCR0B are restored to their original values.
+  uint8_t a = TCCR0A;
+  uint8_t b = TCCR0B;
+
+  TCCR0A = 0x00;
+  TCCR0B = 0x00;
+
   OCR0A = n;
 
-  // in fast PWM mode, OCR0A is only updated when TCNT0 reaches BOTTOM. If we
-  // don't force this to happen, then the old value in OCR0A will be active
-  // for one more interrupt. Therefore we force TCNT0 to overflow by setting
-  // its clock to the system clock...
-  TCCR0B = 0x00 | _BV(CS00) | _BV(WGM02);
-
-  // then waiting until OCR0A has the value we want
-  while (OCR0A != n);
-
-  // restore external clock source
-  TCCR0B = 0x00 | _BV(CS02) | _BV(CS01) | _BV(WGM02);
+  TCCR0A = a;
+  TCCR0B = b;
 }
 
 void trigger_init(void) {
