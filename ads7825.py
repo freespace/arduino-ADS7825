@@ -49,7 +49,7 @@ class ADS7825(object):
 
     # do a dummy read to flush the serial pipline. This is required because
     # the arduino reboots up on being connected, and emits a 'Ready' string
-    assert self._readline() == 'READY'
+    self._ser.flushInput()
 
   def _write(self, x, expectOK=False):
     self._ser.write(x)
