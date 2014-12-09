@@ -201,8 +201,9 @@ class ADS7825(object):
 
       return volts
 
-  def __del__(self):
-    del self._ser
+  def close(self):
+    self._ser.close()
+    self._ser = None
 
 class Test():
   @classmethod
