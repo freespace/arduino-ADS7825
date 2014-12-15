@@ -45,11 +45,16 @@ class ADS7825(object):
   def __init__(self, port=find_arduino_port(), verbose=False):
     super(ADS7825, self).__init__()
     self._verbose = verbose
-    self._ser = serial.Serial(port, baudrate=57600)
+    self._ser = serial.Serial(port, baudrate=115200)
 
+    # Let the bootloader run
+    time.sleep(2)
     # do a dummy read to flush the serial pipline. This is required because
     # the arduino reboots up on being connected, and emits a 'Ready' string
-    self._ser.flushInput()
+    while self._ser.inWaiting():
+      c = self._ser.read()
+      if verbose:
+        print 'ads7825>>',c
 
   def _write(self, x, expectOK=False):
     self._ser.write(x)
