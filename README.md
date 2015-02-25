@@ -1,6 +1,6 @@
 # arduino-ADS7825
 
-Simple arduino program to interface with an ADS7825, a 4 channel 16bit ADC from TI.
+Simple Arduino program to interface with an ADS7825, a 4 channel 16bit ADC from TI. Note that the C version is way ahead of the Arduino implementation, but the Arduino implementation should still work.
 
 # Communication
 
