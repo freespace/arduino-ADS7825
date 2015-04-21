@@ -14,8 +14,9 @@
 #define CHANNELS_AVAILABLE    (4)
 uint8_t nchannels = CHANNELS_AVAILABLE;
 
-// Make room for 512 scans of each of 4 channels
-#define BUFFER_SIZE               (512 * 4)
+// keep in mind that each element of the buffer is 16bits, so takes up two
+// bytes
+#define BUFFER_SIZE               (2048+1024)
 
 typedef struct {
   int16_t data[BUFFER_SIZE];
