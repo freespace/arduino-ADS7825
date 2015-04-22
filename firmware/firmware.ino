@@ -141,11 +141,12 @@ void trig_ISR() {
   if (++trigcnt == _DIVIDER) {
     trigcnt = 0;
     if (writepos < _BUF_SIZE) {
-      buf[writepos++] = read_analog(1);
-      buf[writepos++] = read_analog(2);
-      buf[writepos++] = read_analog(3);
-      buf[writepos++] = read_analog(0);
+      buf[writepos+0] = read_analog(1);
+      buf[writepos+1] = read_analog(2);
+      buf[writepos+2] = read_analog(3);
+      buf[writepos+3] = read_analog(0);
     }
+    writepos += 4;
   }
 }
 
