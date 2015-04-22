@@ -75,6 +75,14 @@ class ADS7825(object):
     import struct
     return struct.unpack('<h', b)[0]
 
+  def set_exposures(self, exposures):
+    """
+    Sets the exposure value, which is the number of readings per read request.
+    This affects read and scan.
+    """
+    exposures = int(exposures)
+    self._write('x%d'%(exposures), expectOK=True)
+
   def read(self, raw=False):
     """
     Returns a 4-tuple of floats, containing voltage measurements, in volts
@@ -232,11 +240,22 @@ class Test():
     print 'Volts: ', volts
     assert len(volts) == 4
 
+  def test_exposures(self):
+    self.adc.set_exposures(1)
+    volts1 = self.adc.read()
+    print 'Volts: ', volts1
+    self.adc.set_exposures(2)
+    volts2 = self.adc.read()
+    print 'Volts: ', volts2
+
+    for v1, v2 in zip(volts1, volts2):
+      assert abs(v2) > abs(v1)
+
   def test_outputs(self):
     self._banner('Digital Output Test')
     for pin in xrange(8):
       for ch in xrange(4):
-        e = raw_input('Connect D%d to channel %d, Enter E end. '%((49-pin), ch+1))
+        e = raw_input('Connect D%d to channel %d, Enter E to end. '%((49-pin), ch+1))
         if e == 'E':
           return
         self.adc.output_off(pin)
@@ -254,7 +273,9 @@ class Test():
     period_ms = 2
     halfperiod_s = period_ms*0.5/1000
 
-    raw_input('Connect D49 to D38 and press [ENTER]')
+    e = raw_input('Connect D49 to D38, enter E to end.')
+    if e == 'E':
+      return
 
     ntriggers = 200
 

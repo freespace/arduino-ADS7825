@@ -190,7 +190,16 @@ int main(void) {
         trigger_set(a);
         _ack();
       }
+    } else if (c == 'x') {
+      a = getchar();
+      a = a - '0';
+      if (a < 1 || a > 255) _err(ARGUMENT_OUT_OF_RANGE_ERROR);
+      else {
+        adc_set_exposures(a);
+        _ack();
+      }
     } else _err(UNKNOWN_COMMAND_ERROR);
+
   }
 
   return 0;

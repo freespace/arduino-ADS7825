@@ -20,5 +20,6 @@
 
 int adc_init(void);
 int16_t adc_read_analog(uint8_t next_chan);
+uint8_t adc_set_exposures(uint8_t exp);
 
 #endif

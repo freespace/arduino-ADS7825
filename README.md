@@ -27,6 +27,9 @@ The program supports the following commands:
 - `tN`: sets the trigger divider. For example, if N=1, then every trigger will
         result in a scan. If N=2, every OTHER trigger will result in a scan.
 
+- `xN`: sets the exposure value, which is the number of readings per trigger.
+        N is between 1-9 only, and defaults to 1.
+
 Commands that do not result in immediate output, such as `s` will output either
 `OK` or `ERRx` to indicate success or error, followed by `\n`. `x` is an error
 code that will specify the error that occured. See `errors.h` for list of error codes.
