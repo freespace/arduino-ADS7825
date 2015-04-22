@@ -78,7 +78,7 @@ class ADS7825(object):
   def set_exposures(self, exposures):
     """
     Sets the exposure value, which is the number of readings per read request.
-    This affects read and scan.
+    This affects read and scan, and defaults to 1.
     """
     exposures = int(exposures)
     self._write('x%d'%(exposures), expectOK=True)
