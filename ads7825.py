@@ -70,10 +70,15 @@ class ADS7825(object):
   def _readline(self):
     return self._ser.readline().strip()
 
-  def _read16i(self):
-    b = self._ser.read(2)
+  def _read16i(self, count=1):
+    b = self._ser.read(2*count)
     import struct
-    return struct.unpack('<h', b)[0]
+    fmtstr = '<'+ 'h' * count
+    ints = struct.unpack(fmtstr, b)
+    if count == 1:
+      return ints[0]
+    else:
+      return ints
 
   def set_exposures(self, exposures):
     """
@@ -81,7 +86,8 @@ class ADS7825(object):
     This affects read and scan, and defaults to 1.
     """
     exposures = int(exposures)
-    self._write('x%d'%(exposures), expectOK=True)
+    aschar = chr(ord('0')+exposures)
+    self._write('x'+aschar, expectOK=True)
 
   def read(self, raw=False):
     """
@@ -183,10 +189,7 @@ class ADS7825(object):
       self._write('b')
       nints = self._read16i()
 
-      codes = list()
-      while nints:
-        codes.append(self._read16i())
-        nints -= 1
+      codes = self._read16i(count=nints)
 
       return map(c2v, codes)[:nscans*nchannels]
     else:
@@ -231,7 +234,7 @@ class Test():
 
   def _banner(self, text):
     l = len(text)
-    print 
+    print
     print text
     print '-'*l
 
