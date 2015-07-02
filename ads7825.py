@@ -24,9 +24,18 @@ from __future__ import division
 import serial
 import time
 
-def c2v(c):
-  return float(c)/(0x7FFF)*10
+def c2v(c, signed=True):
+  """
+  If signed is True, returns a voltage between -10..10 by interpreting c
+  as a signed 16 bit integer. This is the default behaviour.
 
+  If signed is False, returns a voltage between 0..20 by interpreting c
+  as an UNSIGNED 16 bit integer.
+  """
+  if signed:
+    return 10.0 * float(c)/(0x7FFF)
+  else:
+    return 20.0 * float(int(c)&0xFFFF)/(0xFFFF)
 
 def find_arduino_port():
   from serial.tools import list_ports
@@ -42,6 +51,15 @@ def find_arduino_port():
 
 
 class ADS7825(object):
+  # this indicates whether we interpret the integers from the arduino
+  # as signed or unsigned values. If this is True, then voltages will be
+  # returned in the range -10..10. Otherwise voltages will be returned
+  # in the range 0..10.
+  #
+  # This is useful when doing multiple exposures with unipolar signals which
+  # would otherwise overflow into negative values when signed.
+  signed=True
+
   def __init__(self, port=find_arduino_port(), verbose=False):
     super(ADS7825, self).__init__()
     self._verbose = verbose
@@ -55,6 +73,9 @@ class ADS7825(object):
       c = self._ser.read()
       if verbose:
         print 'ads7825>>',c
+
+  def _c2v(self, c):
+    return c2v(c, signed=self.signed)
 
   def _write(self, x, expectOK=False):
     self._ser.write(x)
@@ -101,7 +122,7 @@ class ADS7825(object):
     if raw:
       return codes
     else:
-      volts = map(c2v, codes)
+      volts = map(self._c2v, codes)
       return volts
 
   def scan(self, nchannels=4):
@@ -191,7 +212,7 @@ class ADS7825(object):
 
       codes = self._read16i(count=nints)
 
-      return map(c2v, codes)[:nscans*nchannels]
+      return map(self._c2v, codes)[:nscans*nchannels]
     else:
       self._write('p')
 
@@ -206,7 +227,7 @@ class ADS7825(object):
         index = ints[0]
         codes = ints[1:]
         assert(len(codes) == 4)
-        volts += map(c2v, codes)
+        volts += map(self._c2v, codes)
 
         if index == nscans-1:
           done = True
