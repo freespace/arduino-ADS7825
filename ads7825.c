@@ -2,6 +2,7 @@
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/cpufunc.h>
+#include <limits.h>
 
 #include <util/delay_basic.h>
 
@@ -72,21 +73,45 @@ uint8_t adc_set_exposures(uint8_t exp) {
 }
 
 /**
+ * This function is NOT wrong. It is written this way using unsigned integers
+ * because I only care about unsigned integer overflows.
+ *
+ * While ADS7825 returns signed integers, I only measure positive integers and
+ * accumulate them according to the number of exposures. This naturally leads
+ * to overflow into negative values at some point.
+ *
+ * This overflow is fine because all I need to do is interpret the number as
+ * unsigned and I recover the actual sum-of-positive values. The difficult is
+ * knowing when I have overflowed back to positive values, because then it
+ * appears the same signed or unsigned.
+ * 
+ * This method is built on the assumption I only add positive values, and I
+ * only interpret the result as unsigned integers.
+ */
+inline uint16_t addint(uint16_t a, uint16_t b) {
+  uint16_t c = a+b;
+  if (c < a || c < b) return 0xFFFF;
+  else return c;
+}
+
+/**
   Reads in n number of conversion values, and sets the next channel to be
   sampled. n is determined by adc_set_exposures and defaults to 1.
 
-  It is recommended that, if this code is called outside of an IRS, for it to
+  It is recommended that, if this code is called outside of an ISR, for it to
   be surrounded by cli() and sei() to avoid interrupts occuring during
   execution of the function.
 
   Returned value is 2s complemented 16 bit integer.
+
+  Note that when exposures is set the result should be interpreted as uint16_t
   */
 int16_t adc_read_analog(uint8_t next_chan) {
   // do exposure-1 readings without touching A0 and A1
   int16_t code = 0;
   uint8_t cnt = 0;
   for (; cnt < _exposures-1; ++cnt) {
-    code += _read_once();
+    code = addint(code, _read_once());
   }
 
   // for the last read we need to setup for next_chan, so we modify
@@ -95,7 +120,7 @@ int16_t adc_read_analog(uint8_t next_chan) {
   next_chan&0x2?SET(CONTROL_PORT, A1):CLEAR(CONTROL_PORT, A1);
 
   // and doe on more read
-  code += _read_once();
+  code = addint(code, _read_once());
 
   return code;
 }
