@@ -63,7 +63,7 @@ class ADS7825(object):
   def __init__(self, port=find_arduino_port(), verbose=False):
     super(ADS7825, self).__init__()
     self._verbose = verbose
-    self._ser = serial.Serial(port, baudrate=115200)
+    self._ser = serial.Serial(port, baudrate=250000)
 
     # Let the bootloader run
     time.sleep(2)
