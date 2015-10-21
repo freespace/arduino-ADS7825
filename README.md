@@ -9,14 +9,25 @@ When firmware is ready to accept commands, it will output `READY\n`.
 The program supports the following commands:
 
 - `r`:  reads the 4 channels, printing the results as ASCII to serial immediately.
-- `sN:`: starts a continuous scan of N channels whenever an external trigger
+
+- `sN:`:starts a continuous scan of N channels whenever an external trigger
         is received, possibly after some frequency division. Data is stored
         sequentially into an internal buffer. Scan stops when buffer is full.
+
 - `p`:  prints the contents of the buffer in ASCII, up to the last write
         position.
+
 - `b`:  prints the contents of the buffer in binary. The byte stream will
-        contain 16 bit signed integers, send LSB first. The first 16 bit
+        contain 16 bit signed integers, sent LSB first. The first 16 bit
         integer is the number of 16 bit integers to follow.
+
+- `BX`: prints the first X 16 bit unsigned integers, sent LSB first.
+        X is expected be 2 characters encoding 64 values each. Each
+        character is produced by adding the desired value (0..63) onto
+        the ASCII value for '0'. The least significant byte is expected
+        first. Note that like `b`, the first 16 bit integers is the
+        number of 16 bit integers to follow.
+
 - `c`:  sends a 16 bit integer, LSB first, of how many integers are currently
         in the buffer.
 - `oN`:
@@ -33,6 +44,9 @@ The program supports the following commands:
 Commands that do not result in immediate output, such as `s` will output either
 `OK` or `ERRx` to indicate success or error, followed by `\n`. `x` is an error
 code that will specify the error that occured. See `errors.h` for list of error codes.
+
+Where not specified, numbers are always sent as ASCII to facilitate ease
+of manual operation.
 
 ## Interrupts
 
