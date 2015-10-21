@@ -60,9 +60,12 @@ class ADS7825(object):
   # would otherwise overflow into negative values when signed.
   signed=True
 
-  def __init__(self, port=find_arduino_port(), verbose=False):
+  def __init__(self, port=None, verbose=False):
     super(ADS7825, self).__init__()
     self._verbose = verbose
+    if port is None:
+      port = find_arduino_port()
+
     self._ser = serial.Serial(port, baudrate=250000)
 
     # Let the bootloader run
@@ -200,17 +203,26 @@ class ADS7825(object):
     self._ser.flushInput()
 
     if binary:
-      nints = self.buffer_writepos
+      wantints = nscans * nchannels
+      assert wantints < 63*64+63
+
+      # ask for binary print out of the required number
+      # int samples
+      self._write('B')
+      ascii0 = ord('0')
+
+      # we encode using our ad hoc b64 scheme
+      self._write(chr(wantints%64 + ascii0))
+      self._write(chr(wantints//64 + ascii0))
+
+      # get the number of ints available
+      nints = self._read16i()
+      print 'Wanted %d ints, %d available'%(wantints, nints)
+      # read them all in
+      codes = self._read16i(count=nints)
 
       if nints < nscans*nchannels:
         raise Exception("Premature end of buffer. ADC probably couldn't keep up. Codes available: %d need %d"%(nints, nscans*nchannels))
-
-      # ask for binary print out of the buffer, and the buffer might have
-      # updated we get the up to date count of ints to expect
-      self._write('b')
-      nints = self._read16i()
-
-      codes = self._read16i(count=nints)
 
       return map(self._c2v, codes)[:nscans*nchannels]
     else:
